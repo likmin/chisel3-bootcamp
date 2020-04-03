@@ -50,3 +50,10 @@ null/
 
 ## 5.compile dir
 test_run_dir/
+
+
+## 6.ignore verilog, firrtl,json
+
+*.v
+*.fir
+*.json
