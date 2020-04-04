@@ -17,4 +17,9 @@ class RegNextModule extends Module {
   
   // register bitwidth is inferred from io.out
   io.out := RegNext(io.in + 1.U)
+
+  /**
+    * RegNext的另一种初始化方法：
+    * RegNext(next, init)
+    */
 }

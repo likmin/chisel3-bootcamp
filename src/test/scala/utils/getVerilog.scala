@@ -30,6 +30,7 @@ object getVerilog {
       case "registermodule"     => chisel3.Driver.emitVerilog(new RegisterModule)
       case "findmax"            => chisel3.Driver.emitVerilog(new FindMax)
       case "clockexamples"      => chisel3.Driver.emitVerilog(new ClockExamples)
+      case "mymanydynamicelementvecfir" => chisel3.Driver.emitVerilog(new MyManyDynamicElementVecFir(length = 16))
     }
 
   }

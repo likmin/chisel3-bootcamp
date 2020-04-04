@@ -8,9 +8,46 @@
 
 这里只包含了[chisel-bootcamp](https://github.com/freechipsproject/chisel-bootcamp)的第2-4章，每章都放在一个`package`中，第***i***章放在了`package week`***i*** 中。
 
+### 环境要求
+   - 系统要求：Windows, Linux  
+
+   - 软件要求：[sbt](https://www.scala-sbt.org/)和[Scala](https://scala-lang.org) 
+
+   > sbt在国内可能会比较慢，建议切换成阿里源配置如下:  
+
+   1. ~/.sbt中创建`repositories`文件，并添加如下内容
+      
+         ```shell
+         [repositories]
+         local
+         osc: https://maven.aliyun.com/nexus/content/groups/public/
+         typesafe: https://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext], bootOnly
+         sonatype-oss-releases
+         maven-central
+         sonatype-oss-snapshots
+         ```
+
+   2. 添加`-Dsbt.override.build.repos=true`到sbt软件的配置文件中，  
+      
+      如果是Linux系统，添加到`path_to_installation/sbt/conf/sbtopts`末尾.
+      如果是windows，添加到`path_to_installation/sbt/conf/sbtconfig.txt`末尾.
+
+
 
 ### 快速开始
+1. 打开sbt
 
+2. 测试week2包中Sort4
+   ```shell
+   test:runMain week2.Week2Main sort4
+   ```
+   最后一行会出现[Success]
+
+3. 生成Sort4的Verilog代码
+   ```shell
+   test:runMain utils.getVerilog sort4
+   ```
+   最终会在该项目的根目录中生成三个文件：`Sort4.v, Sort4.fir, Sort4.anno.json`
 
 ### 测试项目
 
@@ -34,38 +71,27 @@
      test:runMain week2.WeekMain gradlife
      ```
 
-     ```shell
-     sbt:chisel3-bootcamp> test:runMain week2.Week2Main gradlife
-     [warn] Multiple main classes detected.  Run 'show discoveredMainClasses' to see the list
-     [warn] Multiple main classes detected.  Run 'show discoveredMainClasses' to see the list
-     [info] running week2.Week2Main gradlife
-     Starting tutorial gradlife
-     [info] [0.001] Elaborating design...
-     [info] [0.817] Done elaborating.
-     Total FIRRTL Compile Time: 391.0 ms
-     file loaded in 0.064239 seconds, 25 symbols, 19 statements
-     [info] [0.001] SEED 1585547359762
-     test GradLife Success: 32 tests passed in 5 cycles in 0.015611 seconds 320.28 Hz
-     [info] [0.009] RAN 0 CYCLES PASSED
-     Tutorials passing: 1
-     [success] Total time: 3 s, completed 2020-3-30 13:49:21
-     ```
 
 ### 生成Verilog
-   
-   - 生成LastConnect的Verilog代码
+
+   生成Verilog的步骤：
+
+   1. 在utils中getVerilog中添加相应的子项
+
+   2. 打开sbt，生成Verilog
 
       ```shell
-      test:runMain utils.getVerilog lastconnect
+      test:runMain utils.getVerilog 文件名
       ```
+
    
-   
+
 
 ### 一些笔记
    - Week2
-      - Registers和Wires在控制流上非常相似：  
-        1.Registers也有last connect  
+      - Registers和Wires在控制流上非常相似： 
+        1.Registers也有last connect 
         最后一个赋值是有效的，但是与wire不同的是，Register的赋值语句是在always模块中的，而wire会转变为Verilog中的组合逻辑
         
-        2.可以用when,elsewhen,otherwise有条件的被赋值  
+        2.可以用when,elsewhen,otherwise有条件的被赋值 
          Register条件赋值会被转化成一堆“与或语句”，而这里会转会为always模块中的if...else语句
