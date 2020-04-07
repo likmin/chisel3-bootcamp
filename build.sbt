@@ -43,12 +43,13 @@ resolvers ++= Seq(
 val defaultVersions = Map(
   "chisel3" -> "3.2.+",
   "chisel-iotesters" -> "1.3.+",
+  "chisel-testers2" -> "0.1.0",
   "dsptools" -> "1.2.0",
   "rocket-dsptools" -> "1.2.0",
   "firrtl-diagrammer" -> "1.1.0"
   )
 
-libraryDependencies ++= Seq("chisel3","chisel-iotesters", "dsptools", "rocket-dsptools", "firrtl-diagrammer").map {
+libraryDependencies ++= Seq("chisel3", "chisel-iotesters", "chisel-testers2", "dsptools", "rocket-dsptools", "firrtl-diagrammer").map {
   dep: String => "edu.berkeley.cs" %% dep % sys.props.getOrElse(dep + "Version", defaultVersions(dep)) }
 
 libraryDependencies += "org.scalanlp" %% "breeze" % "0.13.2"

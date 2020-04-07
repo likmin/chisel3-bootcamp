@@ -2,6 +2,7 @@ package utils
 
 import week2._
 
+import chisel3._
 /**
   * 用于生成Verilog代码，调用方法：
   * 1.打开sbt
@@ -17,7 +18,8 @@ import week2._
   *  
   * 可以自行添加想要生成Verilog代码的文件名
   *
-  * TODO: 指定Verilog代码的生成位置 
+  * TODO: 1.指定Verilog代码的生成位置 
+  *       2.将load-ivy.sc中的getVerilog搬运过来
   */
 
 
@@ -31,6 +33,7 @@ object getVerilog {
       case "findmax"            => chisel3.Driver.emitVerilog(new FindMax)
       case "clockexamples"      => chisel3.Driver.emitVerilog(new ClockExamples)
       case "mymanydynamicelementvecfir" => chisel3.Driver.emitVerilog(new MyManyDynamicElementVecFir(length = 16))
+      case "queuemodule"        => chisel3.Driver.emitVerilog(new QueueModule(UInt(9.W), 200))
     }
 
   }
