@@ -116,6 +116,8 @@ object Week2Main {
       PassthroughGeneratorChiselTester()
     } else if(args.length == 1 && args(0).toLowerCase == "queuemodule") {
       QueueModuleTester()
-    }else TutorialRunner("Week2Main",tests, args)
+    } else if(args.length == 1 && args(0).toLowerCase == "decoupledgcd") {
+      DecoupledGcdTester()
+    } else TutorialRunner("Week2Main",tests, args)
   }
 }
