@@ -118,6 +118,6 @@ object Week2Main {
       QueueModuleTester()
     } else if(args.length == 1 && args(0).toLowerCase == "decoupledgcd") {
       DecoupledGcdTester()
-    } else TutorialRunner("Week2Main",tests, args)
+    } else TutorialRunner("Week2Main", tests, args)
   }
 }

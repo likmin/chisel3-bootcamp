@@ -1,6 +1,7 @@
 package utils
 
 import week2._
+import week3._
 
 import chisel3._
 /**
@@ -27,6 +28,7 @@ object getVerilog {
   def main(args: Array[String]): Unit = {
 
     args(0) toLowerCase match {
+      // week 2
       case "sort4"              => chisel3.Driver.emitVerilog(new Sort4)
       case "lastconnect"        => chisel3.Driver.emitVerilog(new LastConnect)
       case "registermodule"     => chisel3.Driver.emitVerilog(new RegisterModule)
@@ -34,6 +36,10 @@ object getVerilog {
       case "clockexamples"      => chisel3.Driver.emitVerilog(new ClockExamples)
       case "mymanydynamicelementvecfir" => chisel3.Driver.emitVerilog(new MyManyDynamicElementVecFir(length = 16))
       case "queuemodule"        => chisel3.Driver.emitVerilog(new QueueModule(UInt(9.W), 200))
+
+      // week 3
+
+      case "parameterizedwidthddder"  => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6))
     }
 
   }
