@@ -29,7 +29,7 @@ object getVerilog {
 
     args(0) toLowerCase match {
       // week 2
-      case "sort4"              => chisel3.Driver.emitVerilog(new Sort4)
+      case "sort4"              => chisel3.Driver.emitVerilog(new week2.Sort4)
       case "lastconnect"        => chisel3.Driver.emitVerilog(new LastConnect)
       case "registermodule"     => chisel3.Driver.emitVerilog(new RegisterModule)
       case "findmax"            => chisel3.Driver.emitVerilog(new FindMax)
@@ -40,6 +40,7 @@ object getVerilog {
       // week 3
 
       case "parameterizedwidthddder"  => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6))
+      case "delayby1"           => chisel3.Driver.emitVerilog(new DelayBy1)
     }
 
   }

@@ -15,6 +15,16 @@ object Week3Main {
             (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new Sort4(false), manager) {
                 (c) => new Sort4DescendingTester(c)
             }
+        },
+        "halfadder" -> {
+            (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new HalfFullAdder(false), manager) {
+                (c) => new HalfAdderTester(c)
+            }
+        },
+        "fulladder" -> {
+            (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new HalfFullAdder(true), manager) {
+                (c) => new FullAdderTester(c)
+            }
         }
     )
 

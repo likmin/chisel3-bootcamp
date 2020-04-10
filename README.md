@@ -108,3 +108,82 @@
          - `fork`启动一个并发代码块，附加的fork在前面的fork的代码块末尾通过`.fork{...}`添加，
             这样`fork {...}`和`.fork{...}`可并发的执行。join: 将多个相关分叉重新组合
             （re-unities）重新组合到调用线程中。
+
+   - week3
+      - getOrElse : 对于`Map`或`Option`通常通过`get`方法获得数据——如果有则返回的数据类型为Some()类型，
+                    否则会出错返回`None`类型，这时候我们可以通过`getOrElse`方法指定在出错时的默认值
+      
+      - Match/Case Statements : Scala中提供了多种match模式
+         - Value Matching : match的标准取决Value值的大小
+         - Multiple Value Matching : 
+            ```scala
+            def animalType(biggerThanBreadBox: Boolean, meanAsCanBe: Boolean): String = {
+               (biggerThanBreadBox, meanAsCanBe) match {
+                  case (true, true) => "wolverine"
+                  case (true, false) => "elephant"
+                  case (false, true) => "shrew"
+                  case (false, false) => "puppy"
+               }
+            }
+            ``` 
+         - Type Matching : 根据元素的类型决定
+            ```scala
+            val sequence = Seq("a", 1, 0.0)
+            sequence.foreach { x =>
+               x match {
+                  case s: String => println(s"$x is a String")
+                  case s: Int    => println(s"$x is an Int")
+                  case s: Double => println(s"$x is a Double")
+                  case _ => println(s"$x is an unknown type!")
+               }
+            }
+            ```
+         - Multiple Type Matching : 
+            ```scala
+            val sequence = Seq("a", 1, 0.0)
+               sequence.foreach { x =>
+               x match {
+                  case _: Int | _: Double => println(s"$x is a number!")
+                  case _ => println(s"$x is an unknown type!")
+               }
+            }
+            ```
+         - Option Matching : 对于Option[T]有两个子类别：Some()和None，例如，
+            ```scala
+            def show(x: Option[String]) = x match {
+               case Some(s) => s
+               case None    => "?"
+            }
+            ```
+            `DelayBy1.scala`可以用Option的模式匹配构造：
+            ```scala
+            class DelayBy1(resetValue: Option[UInt] = None) extends Module {
+               val io = IO(new Bundle {
+                  val in = Input(UInt(16.W))
+                  val out = Output(UInt(16.W))
+               })
+
+               val reg = resetValue match {
+                  case Some(x) => RegInit(UInt(x))
+                  case None    => RegInit(UInt())
+               }
+
+               reg := io.in
+               io.out := reg
+            }
+            ```
+
+            > 注意: `Type Matching`也是有局限的，因为Scala在JVM上运行的，JVM在运行时是不保留多态类型，所以在运行时你不可以正确的匹配，例如：
+            > ```scala
+            > val sequence = Seq(Seq("a"), Seq(1), Seq(0.0))
+            > sequence.foreach { x =>
+            >  x match {
+            >     case s: Seq[String] => println(s"$x is a String")
+            >     case s: Seq[Int]    => println(s"$x is an Int")
+            >     case s: Seq[Double] => println(s"$x is a Double")
+            >  }
+            > }
+            > ```
+            > 运行期间[String],[Int],[Double]都会抹去，只会匹配Seq,所以只会匹配到第一个
+         
+
