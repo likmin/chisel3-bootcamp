@@ -185,5 +185,20 @@
             > }
             > ```
             > 运行期间[String],[Int],[Double]都会抹去，只会匹配Seq,所以只会匹配到第一个
-         
+         - 在IO中也可以使用Optional Fields   
 
+      - `implicit arguments`
+         - 函数的变量名中如果有用`implicit`来定义的变量，那在调用该函数时，该变量可以不指定。
+           那该变量的值有谁指定呢？编译器。编译器会找到一个**唯一**的该类型的变量，
+           如果有多个满足要求或者根本就没有编译器会报错！
+      - `implicit Conversion`
+         - 除了`implicit arguments`也可以使用`implicit functions`也就是`implicit conversions`去减少模板的代码。
+           具体来说，就是编译器会自动将一个`Scala object`转化为另一个。例如：
+           ```scala
+            class Animal(val name: String, val species: String)
+            class Human(val name: String)
+            implicit def human2animal(h: Human): Animal = new Animal(h.name, "Homo sapiens")
+            val me = new Human("Adam")
+            println(me.species)
+           ```
+            Human没有`species`数值，但Animal有，我们可以实现一个`implicit conversion`以此给Human添加上species

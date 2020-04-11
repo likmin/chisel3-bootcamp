@@ -4,6 +4,8 @@ import week2._
 import week3._
 
 import chisel3._
+
+import VerbosityImplicit._
 /**
   * 用于生成Verilog代码，调用方法：
   * 1.打开sbt
@@ -39,8 +41,12 @@ object getVerilog {
 
       // week 3
 
-      case "parameterizedwidthddder"  => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6))
-      case "delayby1"           => chisel3.Driver.emitVerilog(new DelayBy1)
+      case "parameterizedwidthadder"      => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6))
+      case "delayby1"                     => chisel3.Driver.emitVerilog(new DelayBy1)
+      case "halffulladderwithcarry"       => chisel3.Driver.emitVerilog(new HalfFullAdder(hasCarry = true))
+      case "halffulladderwithoutcarry"    => chisel3.Driver.emitVerilog(new HalfFullAdder(hasCarry = false))
+
+      case "parameterizedwidthadderwithverbosity" => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6)(Verbose))
     }
 
   }
