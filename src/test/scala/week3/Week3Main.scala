@@ -8,8 +8,6 @@ object Week3Main {
 
     // used to test BinaryMealy start！
     // example from https://en.wikipedia.org/wiki/Mealy_machine
-    val nStates = 3
-    val s0 = 2
     def stateTransition(state: Int, in: Boolean): Int = if(in) 1 else 0
 
     def output(state: Int, in: Boolean): Int = {
@@ -23,7 +21,7 @@ object Week3Main {
         }
     }
     
-    val testParams = BinaryMealyParams(nStates, s0, stateTransition, output)
+    val testParams = BinaryMealyParams(nStates = 3, s0 = 2, stateTransition, output)
     // used to test BinaryMealy end!
     
     val tests = Map(

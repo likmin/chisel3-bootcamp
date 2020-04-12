@@ -49,26 +49,3 @@ class BinaryMealy(val mp: BinaryMealyParams) extends Module {
     }
   }
 }
-
-// example from https://en.wikipedia.org/wiki/Mealy_machine
-val nStates = 3
-val s0 = 2
-def stateTransition(state: Int, in: Boolean): Int = {
-  if (in) {
-    1
-  } else {
-    0
-  }
-}
-def output(state: Int, in: Boolean): Int = {
-  if (state == 2) {
-    return 0
-  }
-  if ((state == 1 && !in) || (state == 0 && in)) {
-    return 1
-  } else {
-    return 0
-  }
-}
-
-val testParams = BinaryMealyParams(nStates, s0, stateTransition, output)
