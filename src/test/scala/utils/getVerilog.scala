@@ -27,6 +27,22 @@ import VerbosityImplicit._
 
 
 object getVerilog {
+
+  // used to test BinaryMealy start！
+  // example from https://en.wikipedia.org/wiki/Mealy_machine
+  def stateTransition(state: Int, in: Boolean): Int = if(in) 1 else 0
+
+  def output(state: Int, in: Boolean): Int = {
+     if (state == 2) {
+          return 0
+     }
+     if ((state == 1 && !in) || (state == 0 && in)) {
+         return 1
+     } else {
+         return 0
+     }
+  }
+
   def main(args: Array[String]): Unit = {
 
     args(0) toLowerCase match {
@@ -47,6 +63,7 @@ object getVerilog {
       case "halffulladderwithoutcarry"    => chisel3.Driver.emitVerilog(new HalfFullAdder(hasCarry = false))
 
       case "parameterizedwidthadderwithverbosity" => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6)(Verbose))
+      case "binarymealy"                  => chisel3.Driver.emitVerilog(new BinaryMealy(BinaryMealyParams(nStates = 3, s0 = 2, stateTransition, output)))
     }
 
   }

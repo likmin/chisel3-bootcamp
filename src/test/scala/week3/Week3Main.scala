@@ -5,7 +5,7 @@ import chisel3.iotesters.{TesterOptionsManager, Driver, PeekPokeTester}
 import utils.TutorialRunner
 
 object Week3Main {
-
+    
     // used to test BinaryMealy start！
     // example from https://en.wikipedia.org/wiki/Mealy_machine
     def stateTransition(state: Int, in: Boolean): Int = if(in) 1 else 0
@@ -49,12 +49,19 @@ object Week3Main {
             (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new BinaryMealy(testParams), manager) {
                 (c) => new BinaryMealyTester(c)
             }
+        },
+        "registerfile" -> {
+            (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new RegisterFile(readPorts = 2), manager) {
+                (c) => new RegisterFileTester(c)
+            }
         }
     )
 
 
     def main(args: Array[String]): Unit = {
         // TODO: args中的字母全部变小写 args.foreach{_ => _.toLowerCase}。 为什么不对呢
-        TutorialRunner("Week3Main", tests, args)
+        if(args.length == 1 && args(0).toLowerCase == "mymanyelementfir") {
+            MyManyElementFirTester()
+        } else TutorialRunner("Week3Main", tests, args)
     }
 }

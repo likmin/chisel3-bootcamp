@@ -202,3 +202,4 @@
             println(me.species)
            ```
             Human没有`species`数值，但Animal有，我们可以实现一个`implicit conversion`以此给Human添加上species
+         > 但是要注意`implicit`不推荐使用，它会使我们的代码扑朔迷离，万不得已不要用，建议使用inheritance，trait，method overloading

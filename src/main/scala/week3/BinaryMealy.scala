@@ -12,6 +12,7 @@ import chisel3._
   * 与之相对应的是Moore machine，Moore machine的输出值只取决于当前的状态。
   *     
   */
+
 case class BinaryMealyParams (
     // number of states
     nStates: Int,
@@ -26,6 +27,7 @@ case class BinaryMealyParams (
     require(nStates >= 0)
     require(s0 < nStates && s0 > 0)
 }
+
 
 class BinaryMealy(val mp: BinaryMealyParams) extends Module {
   val io = IO(new Bundle {
