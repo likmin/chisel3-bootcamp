@@ -62,6 +62,8 @@ object Week3Main {
         // TODO: args中的字母全部变小写 args.foreach{_ => _.toLowerCase}。 为什么不对呢
         if(args.length == 1 && args(0).toLowerCase == "mymanyelementfir") {
             MyManyElementFirTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "queuetester") {
+            QueueTester()
         } else TutorialRunner("Week3Main", tests, args)
     }
 }

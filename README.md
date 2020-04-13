@@ -203,3 +203,23 @@
            ```
             Human没有`species`数值，但Animal有，我们可以实现一个`implicit conversion`以此给Human添加上species
          > 但是要注意`implicit`不推荐使用，它会使我们的代码扑朔迷离，万不得已不要用，建议使用inheritance，trait，method overloading
+
+      - ***Chisel Standard Library***
+         - [Chisel3 Cheatsheet](https://github.com/freechipsproject/chisel-cheatsheet/releases/latest/download/chisel_cheatsheet.pdf)
+         - **Decoupled** : 一个标准的 ***Ready-Valid*** 接口  
+            Decoupled(io)有三个值：  
+               valid : Output(Bool()), 当valid信号有效时表示**发送端**数据准备好传输了  
+               ready :  Input(Bool()), 当ready信号有效时表明**接收端**准备好接收数据了  
+               bits : io,没有添加ready和valid信号之前的数据
+
+            当ready和valid在一个周期中同时有效时，数据就可以传输了。
+
+            > 注意：  
+            >  1.ready和valid不应该是组合耦合（combinationally coupled），否则可能导致无法综合的组合循环（unsynthesizable combinational loops）  
+            >  2.valid应该只取决于数据的发送端是否有数据  
+            >  3.ready应该只取决于数据的接收端是否有能力接受数据  
+            >  4.当传输完毕后，即下一个周期才更新数据
+
+         - **Queues** : `Queue`可以为Decoupled的接口创建一个FIFO队列，允许`backpressure`数据类型和个数都是可配置的。  
+            > backpressure:在数据流从上游生产者向下游消费者传输的过程中，上游生产速度大于下游消费速度，导致下游的 **Buffer 溢出**，这种现象就叫做 Backpressure 出现。
+            
