@@ -64,6 +64,12 @@ object Week3Main {
             MyManyElementFirTester()
         } else if(args.length == 1 && args(0).toLowerCase == "queuetester") {
             QueueTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "arbitertester") {
+            ArbiterTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "popcounttester") {
+            PopCountTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "resersetester") {
+            ReverseTester()
         } else TutorialRunner("Week3Main", tests, args)
     }
 }

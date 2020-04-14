@@ -222,4 +222,12 @@
 
          - **Queues** : `Queue`可以为Decoupled的接口创建一个FIFO队列，允许`backpressure`数据类型和个数都是可配置的。  
             > backpressure:在数据流从上游生产者向下游消费者传输的过程中，上游生产速度大于下游消费速度，导致下游的 **Buffer 溢出**，这种现象就叫做 Backpressure 出现。
-            
+            > 允许**Buffer溢出**，溢出的元素就不管了。详情查看`src/test/week3/QueueTester.scala`
+         
+         - **Arbiter** : 在给定的优先级(prioritization)下，仲裁器将 ***n*** 个`DecoupleIO源`路由(routes)到一个`DecoupledIO接收器`，Chisel中有两种类型
+            - Arbiter: 系数越低，优先级越高。(prioritizes lower-index produces)
+            - RRArbiter: 按照循环次序运行。(runs in round-robin order)
+         
+         - **Bitwise Utilities(按位使用工具)**
+            - PopCount: 返回UInt中1的个数
+            - Reverse：按位反转
