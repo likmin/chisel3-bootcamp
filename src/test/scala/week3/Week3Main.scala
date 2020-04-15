@@ -70,6 +70,12 @@ object Week3Main {
             PopCountTester()
         } else if(args.length == 1 && args(0).toLowerCase == "resersetester") {
             ReverseTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "onehot") {
+            OneHotTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "muxes") {
+            MuxesTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "counter") {
+            CounterTester()
         } else TutorialRunner("Week3Main", tests, args)
     }
 }

@@ -228,6 +228,23 @@
             - Arbiter: 系数越低，优先级越高。(prioritizes lower-index produces)
             - RRArbiter: 按照循环次序运行。(runs in round-robin order)
          
-         - **Bitwise Utilities(按位使用工具)**
-            - PopCount: 返回UInt中1的个数
-            - Reverse：按位反转
+         - **Bitwise Utilities(按位实用工具)**
+            - PopCount: 返回UInt中1的个数，测试文件`src/test/week3/PopCountTester`
+            - Reverse：按位反转，测试文件`src/test/week3/ReverseTester`
+            
+
+         - **OneHot encoding utilities** : **OneHot**是整数的编码，其中每个值只有一条wire，而恰好一根导线很高。这可以非常高效的创建一些功能，例如多路复用器。
+            
+            > 但是如果多个线保持高电平状态，那行为可能不确定  
+
+            - **UIntToOH** : UInt to OneHot, 例如4.U 转化为OneHot就是'10000'.
+            - **OHToUInt** : OneHot to UInt, OneHot中高电平的最高位，但高电平必须是唯一的，如果有多个高电平的话，会直接输出的的是最高位值。  
+            测试文件`src/test/week3/OneHotTester`
+
+         - **Muxes** : muxes会接收带有选择信号的值列表，并输出与最低索引选择信号相关联的值。
+                       muxes可以采用(Select: Bool, value: Data)元祖的列表，也可以将select和value列表作为参数。
+                       这里只演示第二种形式
+            - **Priority Mux** : A PriorityMux outputs the value associated with the lowest-index asserted select signal.
+            - **OneHot Mux** : An Mux1H provides an efficient implementation when it is guaranteed that exactly one of the select signals will be high. Behavior is undefined if the assumption is not true.
+
+         - **Counter** : 计数器，见`src/test/week3/CounterTester`
