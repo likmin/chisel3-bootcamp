@@ -248,3 +248,149 @@
             - **OneHot Mux** : An Mux1H provides an efficient implementation when it is guaranteed that exactly one of the select signals will be high. Behavior is undefined if the assumption is not true.
 
          - **Counter** : 计数器，见`src/test/week3/CounterTester`
+
+      - ***higher-order functions***
+         **higher-order functions**就是可以把**functions**当做参数的函数，例如`map`、`reduce`他们的参数为函数。Scala中函数的表达形式:   `(参数列表) => 函数体`，例如，
+         
+         ```scala
+         (a, b) => a + b // 传递参数a,b。 返回参数a + b的值
+         a => println(a) // 打印参数a
+
+         List(1, 2, 3, 4).foreach{ a => println(a) } //打印List中的所有元素
+         List(1, 2, 3, 4).map(a => a * a) // List中所有元素都平方，得到新的List，返回值为List(1, 4, 9, 16),
+                                          // 注意这是一个新的List
+         List(1, 2, 3, 4).map(_ => _ * _) // 同上一条效果相同，下划线类似于填空，在这里指的是List中任意元素都要做这样的操作
+         ```
+
+         Scala中很多 ***higher-order functions*** 函数，具体如下：
+         `Map`、
+         `zipWithIndex`
+         `Reduce`
+         `Fold`
+         `zip`、`unzip`...(还有很多)，具体功能如下：
+
+         - **Map**  
+            List[A].map的类型签名如下：
+            ```scala
+            map[A](f: (A) => B): List[B]
+            ```
+            一个List[A]调用该函数后，根据传入的函数 ***f*** 映射成一个新的List[B].
+
+            ```scala
+               List(1, 2, 3, 4).map(x => x + 1) // List(2, 3, 4, 5)
+               List(1, 2, 3, 4).map(_ + 1)      // 与上一条等同
+               List(1, 2, 3, 4).map(_.toString + "a") // List[String] = List(1a, 2a, 3a, 4a)
+
+               List((1, 5), (2, 6), (3, 7), (4, 8)).map { case (x, y) => x*y } // List(5, 12, 21, 32)
+
+               val myList = List("a", "b", "c", "d")
+               myList(_) // 这是一个Lambda函数：Int => String 
+               
+               (0 to 4) // 0,1,2,3,4
+               (0 until 4) // 0,1,2,3
+               (0 to 4 by 2) // 0,2,4
+               (0 until 4 by 2) // 0,2
+               /**
+                 * 这些都是range类型的，可以用来生成索引(indices),但是不能大于List的数量
+                 */
+
+               (0 until 4).map{myList(_)} // Vector(a, b, c, d)
+               (0 until 4 by 2).map{myList(_)} // Vector(a, c)
+               (0 to 4 by 2).map{myList(_)} // Error:java.lang.IndexOutOfBoundsException: 4
+
+            ```
+
+         - **zipWithIndex** 
+            List.zipWithIndex的类型签名如下:
+            ```scala
+            zipWithIndex: List[(A, Int)]
+            ```
+            没有参数，返回值为tuple类型，tuple中第一个元素为原来的List中的元素，第二个为系数，从0开始的。
+
+            ```scala
+            List(1, 2, 3, 4).zipWithIndex // List((1,0), (2,1), (3,2), (4,3))
+            List("a", "b", "c", "d").zipWithIndex // List((a,0), (b,1), (c,2), (d,3))
+            List(("a", "b"), ("c", "d"), ("e", "f"), ("g", "h")).zipWithIndex // List(((a,b),0), ((c,d),1), ((e,f),2), ((g,h),3))
+            ```
+
+         - **reduce**
+            List[A].reduce的类型签名如下：
+            ```scala
+            reduce(op: (A, A) ⇒ A): A
+            ```
+            reduce的作用是在List[A]的所有元素中添加一个二元运算，根据运算的顺序，Scala中`reduce`有`reduceLeft`和`reduceRight`,
+            如果List开头开始运算，则用`reduceLeft`，反之则使用`reduceRight`.如果直接调用reduce，默认使用`reduceRight`.例如：
+
+            
+            ```scala
+               List(1, 2, 3, 4).reduceLeft((a, b) => a * b)
+
+                    *
+                   / \
+                  *   4
+                 / \
+                *   3
+               / \
+              1   2
+
+             计算顺序(1 * 2) -> (2 * 3) -> ((6 * 4) -> 24
+
+             可以通过添加println函数体现
+               List(1, 2, 3, 4).reduceLeft((a, b) => {println(a + " * " + b + " = " + a * b);a * b})
+               结果为：
+               1 * 2 = 2
+               2 * 3 = 6
+               6 * 4 = 24
+               res15: Int = 24
+             
+             reduceRight
+               List(1, 2, 3, 4).reduceRight((a, b) => {println(a + " * " + b + " = " + a * b);a * b})
+               3 * 4 = 12
+               2 * 12 = 24
+               1 * 24 = 24
+               res16: Int = 24
+            ```
+            `reduce`的两种表达形式
+            ```scala
+            println(List(1, 2, 3, 4).reduce((a, b) => a + b))  // returns the sum of all the elements
+            println(List(1, 2, 3, 4).reduce(_ * _))  // returns the product of all the elements
+            ```
+
+         - **Fold**
+            `fold`和`reduce`很像，但是`fold`需要给定一个初始化一个累记值。`fold`的类型签名：
+            ```scala
+            fold(z: A)(op: (A, A) => A): A 
+            ```
+            其中z就是累计值的初始值。和`reduce`一样，`fold`同样也有`foldLeft`和`foldRight`.
+            
+            ```scala
+            List(1, 2, 3, 4).fold(0)(_ + _)
+
+                    *
+                   / \
+                  *   4
+                 / \
+                *   3
+               / \
+              *   2
+             / \
+            0   1
+
+            通过添加println测试
+            List(1, 2, 3, 4).foldLeft(0)((a, b) => {println(a + " + " + b + " = " + (a + b));a + b})
+            0 + 1 = 1
+            1 + 2 = 3
+            3 + 3 = 6
+            6 + 4 = 10
+            res21: Int = 10
+
+
+            List(1, 2, 3, 4).foldRight(0)((a, b) => {println(a + " + " + b + " = " + (a + b));a + b})
+            4 + 0 = 4
+            3 + 4 = 7
+            2 + 7 = 9
+            1 + 9 = 10
+            res22: Int = 10
+            ```
+
+            > `reduce`和`fold`还有一点不同就是，List为空时，`reduce`不可以操作，但`fold`可以
