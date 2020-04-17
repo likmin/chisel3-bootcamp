@@ -241,12 +241,19 @@
             - **OHToUInt** : OneHot to UInt, OneHot中高电平的最高位，但高电平必须是唯一的，如果有多个高电平的话，会直接输出的的是最高位值。  
             测试文件`src/test/week3/OneHotTester`
 
-         - **Muxes** : muxes会接收带有选择信号的值列表，并输出与最低索引选择信号相关联的值。
-                       muxes可以采用(Select: Bool, value: Data)元祖的列表，也可以将select和value列表作为参数。
-                       这里只演示第二种形式
-            - **Priority Mux** : A PriorityMux outputs the value associated with the lowest-index asserted select signal.
-            - **OneHot Mux** : An Mux1H provides an efficient implementation when it is guaranteed that exactly one of the select signals will be high. Behavior is undefined if the assumption is not true.
-
+         - **Muxes** : Chisel3中提供了4种Mux
+            - **Mux** : `Mux(cond, con, alt)`表示`if(cond) con else alt`
+            - **MuxCase** : `MuxCase(default, mapping)`,mapping类型为Seq[(Bool, T)],MuxCase返回mapping中第一个元素为true的相关联的值，如果第一个元素都为false，返回默认值default
+            例如：
+            ```scala
+               MuxCase(0.U,Array((false.B, 1.U), (true.B,2.U),(false.B,3.U))) // 返回值为3.U
+            ```
+            - **MuxLookup** : 创建n个Mux的级联以搜索key值,其中MuxLookup的apply函数：
+            ```scala
+            def apply[S <: UInt, T <: Data] (key: S, default: T, mapping: Seq[(S, T)]): T = {...} 
+            ```
+            - **Mux1H** : 返回选择信号为true的相关联的值，如果有多个同时为high，输出则不确定。
+            - **PriorityMux** :从低到高，输出第一个选择信号为true的相关联的值。如果没有选择信号为true，则返回最后一个。
          - **Counter** : 计数器，见`src/test/week3/CounterTester`
 
       - ***higher-order functions***
@@ -319,7 +326,7 @@
             reduce(op: (A, A) ⇒ A): A
             ```
             reduce的作用是在List[A]的所有元素中添加一个二元运算，根据运算的顺序，Scala中`reduce`有`reduceLeft`和`reduceRight`,
-            如果List开头开始运算，则用`reduceLeft`，反之则使用`reduceRight`.如果直接调用reduce，默认使用`reduceRight`.例如：
+            如果List开头开始运算，则用`reduceLeft`，反之则使用`reduceRight`.如果直接调用reduce，默认使用`reduceLeft`.例如：
 
             
             ```scala
@@ -366,15 +373,30 @@
             ```scala
             List(1, 2, 3, 4).fold(0)(_ + _)
 
-                    *
+            foldLeft:
+                    +
                    / \
-                  *   4
+                  +   4
                  / \
-                *   3
+                +   3
                / \
-              *   2
+              +   2
              / \
             0   1
+
+            计算顺序(0 + 1) -> ((0 + 1) + 2) -> (((0 + 1) + 2) + 3) -> ((((0 + 1) + 2) + 3) + 4) -> 10
+
+            foldRight:
+              +
+             / \
+            1   +
+               / \
+              2   +
+                 / \
+                3   +
+                   / \
+                  4   0  
+
 
             通过添加println测试
             List(1, 2, 3, 4).foldLeft(0)((a, b) => {println(a + " + " + b + " = " + (a + b));a + b})
@@ -391,6 +413,9 @@
             2 + 7 = 9
             1 + 9 = 10
             res22: Int = 10
+
+
+
             ```
 
             > `reduce`和`fold`还有一点不同就是，List为空时，`reduce`不可以操作，但`fold`可以
