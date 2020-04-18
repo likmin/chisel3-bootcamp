@@ -54,6 +54,11 @@ object Week3Main {
             (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new RegisterFile(readPorts = 2), manager) {
                 (c) => new RegisterFileTester(c)
             }
+        },
+        "myroutingarbiter" -> {
+            (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new MyRoutingArbiter(numChannels = 6), manager) {
+                (c) => new MyRoutingArbiterTester(c)
+            }
         }
     )
 
@@ -76,6 +81,8 @@ object Week3Main {
             MuxesTester()
         } else if(args.length == 1 && args(0).toLowerCase == "counter") {
             CounterTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "myfir") {
+            MyFirTester()
         } else TutorialRunner("Week3Main", tests, args)
     }
 }

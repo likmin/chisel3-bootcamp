@@ -254,6 +254,7 @@
             ```
             - **Mux1H** : 返回选择信号为true的相关联的值，如果有多个同时为high，输出则不确定。
             - **PriorityMux** :从低到高，输出第一个选择信号为true的相关联的值。如果没有选择信号为true，则返回最后一个。
+            
          - **Counter** : 计数器，见`src/test/week3/CounterTester`
 
       - ***higher-order functions***
@@ -419,3 +420,54 @@
             ```
 
             > `reduce`和`fold`还有一点不同就是，List为空时，`reduce`不可以操作，但`fold`可以
+
+      - **Functional Programming in Scala**
+         Scala中函数是第一类对象(first-class objects),所以我们可以将一个函数指定为`val`，也可以作为一个参数传递给类(classes)，对象(objects)以及其他函数(functions)。
+         - 定义一个函数有两种方法：`def`和`val`。二者在定义和调用上各有不同：
+            ```scala
+            // These are normal functions.
+            def plus1funct(x: Int): Int = x + 1
+            def times2funct(x: Int): Int = x * 2
+
+            // These are functions as vals.
+            // The first one explicitly specifies the return type.
+            val plus1val: Int => Int = x => x + 1
+            val times2val = (x: Int) => x * 2
+
+            // Calling both looks the same.
+            plus1funct(4)
+            plus1val(4)
+            plus1funct(x=4)
+            //plus1val(x=4) // this doesn't work,Error: not found: value x
+            ```
+
+         - 在 ***higher-order functions***中，函数是可以被当做参数传递的.
+            > 实验Scala2.12，不论是`val`还是`def`都可以被传递的，但并没有出现只有`val`才可以被传递的情况啊  
+
+            ```scala
+             def plus1funct(x: Int): Int = x + 1
+             val plus1val: Int => Int = x => x + 1
+             def op(x: Int, f: Int => Int) =f(x)
+
+             // 这两种情况都是可以的
+             op(3,plus1funct)
+             op(3,plus1val)
+            ```            
+         - `val`和`def`的区别在定义一个无参数的函数时将非常明显，如下：
+         ```scala
+         import scala.util.Random
+
+         // both x and y call the nextInt function, but x is evaluated immediately and y is a function
+         val x = Random.nextInt // 定义时就已经计算好了值
+         def y = Random.nextInt // 只是一个函数，调用时才计算
+
+         // x was previously evaluated, so it is a constant
+         println(s"x = $x")
+         println(s"x = $x")
+
+         // y is a function and gets reevaluated at each call, thus these produce different results
+         println(s"y = $y")
+         println(s"y = $y")
+         ```
+      - **Anonymous Functions**
+      - **Functional Programming in Chisel**
