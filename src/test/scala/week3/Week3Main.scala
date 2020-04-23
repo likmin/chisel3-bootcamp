@@ -83,6 +83,8 @@ object Week3Main {
             CounterTester()
         } else if(args.length == 1 && args(0).toLowerCase == "myfir") {
             MyFirTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "neruon") {
+            NeruonTester()
         } else TutorialRunner("Week3Main", tests, args)
     }
 }

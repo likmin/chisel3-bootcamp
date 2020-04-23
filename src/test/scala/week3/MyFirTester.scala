@@ -10,6 +10,7 @@ import breeze.linalg.DenseVector
 object MyFirTester {
 
     def apply() {
+        // TODO: https://en.wikipedia.org/wiki/Window_function. https://www.bilibili.com/video/BV1Ws411H7JY?p=45
         // simple triangular window
         val TriangularWindow: (Int, Int) => Seq[Int] = (length, bitwidth) => {
             val raw_coeffs = (0 until length).map( (x:Int) => 1-abs((x.toDouble-(length-1)/2.0)/((length-1)/2.0)) )

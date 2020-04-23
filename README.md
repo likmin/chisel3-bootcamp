@@ -470,4 +470,51 @@
          println(s"y = $y")
          ```
       - **Anonymous Functions**
-      - **Functional Programming in Chisel**
+      - **Functional Programming in Chisel (Chisel 函数式编程)**
+      - **Object Oriented Programming (面向对象编程)** 
+         - Abstract Class (抽象类): 定义一些没有具体实现的函数或值，这些函数或者值在子类中必须具体实现。任何对象只能单继承
+         - Traits(特征): `Traits`可以定义没有实现的函数和值，这和`abstract class`很像。但和抽象类不同的是，一个类可以继承多个`traits`
+                        , 一个`trait`不可以有构造参数。
+            > 通常，除非你确定要强制执行抽象类的单继承限制，否则始终对抽象类使用特征。
+         - Objects: Scala 对于这些单例类有一个语言特点，称为**objects**，实例化时不需要new关键字，直接调用即可。这和Java的`static classes`很像。
+         - Companion Objects: 当一个类和一个**object** 有相同的名字时，我们就称这个**object**为**companion object**。
+            ```scala
+            object Lion {
+               def roar(): Unit = println("I'M AN OBJECT!")
+            }
+            class Lion {
+               def roar(): Unit = println("I'M A CLASS!")
+            }
+            new Lion().roar() // I'M A CLASS!
+            Lion.roar()       // I'M AN OBJECT!
+            ```
+            为什么要用`companion object`呢？
+            - 为一个类创建多个构造函数
+            - 可以在类构造函数执行之前或之后执行代码
+            - 包含与类相关的常量
+
+            实例如下：
+            ```scala
+            object Animal {
+               val defaultName = "Bigfoot"
+               private var numberOfAnimals = 0
+               def apply(name: String): Animal = {
+                  numberOfAnimals += 1
+                  new Animal(name, numberOfAnimals)
+               }
+               def apply(): Animal = apply(defaultName)
+            }
+            class Animal(name: String, order: Int) {
+            def info: String = s"Hi my name is $name, and I'm $order in line!"
+            }
+
+            val bunny = Animal.apply("Hopper") // Calls the Animal factory method
+            println(bunny.info) // Hi my name is Hopper, and I'm 1 in line!
+            val cat = Animal("Whiskers")       // Calls the Animal factory method
+            println(cat.info) // Hi my name is Whiskers, and I'm 2 in line!
+            val yeti = Animal()                // Calls the Animal factory method
+            println(yeti.info) // Hi my name is Bigfoot, and I'm 3 in line!
+            ```
+         - Case Class
+            **Case Class**和常规的**Class**有以下不同：
+            
