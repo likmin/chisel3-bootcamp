@@ -54,7 +54,10 @@ object getVerilog {
       case "clockexamples"      => chisel3.Driver.emitVerilog(new ClockExamples)
       case "mymanydynamicelementvecfir" => chisel3.Driver.emitVerilog(new MyManyDynamicElementVecFir(length = 16))
       case "queuemodule"        => chisel3.Driver.emitVerilog(new QueueModule(UInt(9.W), 200))
-
+      case "my4elementfir"      => chisel3.Driver.emitVerilog(new week2.My4ElementFir(1, 2, 3, 4))
+      case "polynomial"         => chisel3.Driver.emitVerilog(new Polynomial)
+      case "myshiftregister"    => chisel3.Driver.emitVerilog(new MyShiftRegister(n = 4))
+      case "mymodule"           => chisel3.Driver.emitVerilog(new MyModule)
       // week 3
 
       case "parameterizedwidthadder"      => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6))

@@ -96,6 +96,8 @@
         2.可以用when,elsewhen,otherwise有条件的被赋值 
          Register条件赋值会被转化成一堆“与或语句”，而这里会转会为always模块中的if...else语句
 
+        > TODO: ElasticReg 在Boom源代码中
+
       - ChiselTest
         1.ChiselTest为`Decoupled`接口提供了一些有效的测试工具
          - `initSource`和`setSourceClock`可以在测试开始之前正确的初始化`ready`和`valid`字段
@@ -191,6 +193,7 @@
          - 函数的变量名中如果有用`implicit`来定义的变量，那在调用该函数时，该变量可以不指定。
            那该变量的值有谁指定呢？编译器。编译器会找到一个**唯一**的该类型的变量，
            如果有多个满足要求或者根本就没有编译器会报错！
+
       - `implicit Conversion`
          - 除了`implicit arguments`也可以使用`implicit functions`也就是`implicit conversions`去减少模板的代码。
            具体来说，就是编译器会自动将一个`Scala object`转化为另一个。例如：
@@ -516,5 +519,7 @@
             println(yeti.info) // Hi my name is Bigfoot, and I'm 3 in line!
             ```
          - Case Class
-            **Case Class**和常规的**Class**有以下不同：
+            - `Case Class`允许外部访问类参数
+            - 实例化时不需要用`new`
+            - 自动创建了`unapply`方法用于
             

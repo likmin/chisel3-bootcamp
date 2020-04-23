@@ -13,6 +13,8 @@ class GcdOutputBundle(val w: Int) extends Bundle {
     val gcd    = UInt(w.W)
 }
 
+// TODO: Fire 
+
 class DecoupledGcd(width: Int) extends MultiIOModule {
     val input = IO(Flipped(Decoupled(new GcdInputBundle(width))))
     val output = IO(Decoupled(new GcdOutputBundle(width)))
