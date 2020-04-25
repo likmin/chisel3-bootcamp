@@ -520,6 +520,49 @@
             ```
          - Case Class
             - `Case Class`允许外部访问类参数
-            - 实例化时不需要用`new`
-            - 自动创建了`unapply`方法用于
+            - 实例化时不需要用`new`,**因为Scala编译器自动为每一个case class生成了一个*companion object*，这个*companion object*为case class包含着一个apply方法**
+            - 自动创建了一个未实现的方法用于访问所有的**类参数**，对于`class`,如果要是访问**类参数**的话需要添加`val`,而在`case class`中则不需要。
+            - 不可以被继承
+
+               ```scala
+               class Nail(length: Int) // Regular class
+               val nail = new Nail(10) // Requires the `new` keyword
+               // println(nail.length) // Illegal! Class constructor parameters are not by default externally visible
+
+               class Screw(val threadSpace: Int) // By using the `val` keyword, threadSpace is now externally visible
+               val screw = new Screw(2)          // Requires the `new` keyword
+               println(screw.threadSpace)
+
+               case class Staple(isClosed: Boolean) // Case class constructor parameters are, by default, externally visible
+               val staple = Staple(false)           // No `new` keyword required
+               println(staple.isClosed)
+
+               case class Stapled(isClosed: Boolean) extends Staple(isClosed) // 不可以被继承
+               // Error: case class Stapled has case ancestor Staple, but case-to-case inheritance is prohibited. To overcome this limitation, use extractors to pattern match on non-leaf nodes
+
+               ```
+             
+             
+               `case class`对于含有很多参数的`generator`来说是一个很好的容器，它的构造函数可以**定义派生参数**和**验证有效输入**
+            
+               ```scala
+               case class SomeGeneratorParameters(
+                  someWidth: Int,
+                  someOtherWidth: Int = 10,
+                  pipelineMe: Boolean = false
+               ) {
+                  require(someWidth >= 0)
+                  require(someOtherWidth >= 0)
+                  val totalWidth = someWidth + someOtherWidth
+               }
+               ```
+            
+         - inheritance With Chisel
+            Chisel中自定义的module都是继承于**Module**基类。
+            每个自定义的IO都继承于`Bundle`基类，在一些特殊情况下，Bundle的supertype为`Record`。
+            Chisel中的类似于`UInt`和`Bundle`的supertype为`Data`。
+            
+            - Module
+               在Chisel中，当你希望创建一个硬件对象时，你需要将`Module`作为父类（superclass）。
+               继承可能不总是最好的方法去重用，因为组合优先于继承是一个常见规则，但是它依旧是一个很强大的方法。
             
