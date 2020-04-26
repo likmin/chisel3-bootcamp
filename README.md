@@ -260,7 +260,7 @@
             
          - **Counter** : 计数器，见`src/test/week3/CounterTester`
 
-      - ***higher-order functions***
+      - ***3.3 higher-order functions***
          **higher-order functions**就是可以把**functions**当做参数的函数，例如`map`、`reduce`他们的参数为函数。Scala中函数的表达形式:   `(参数列表) => 函数体`，例如，
          
          ```scala
@@ -424,7 +424,7 @@
 
             > `reduce`和`fold`还有一点不同就是，List为空时，`reduce`不可以操作，但`fold`可以
 
-      - **Functional Programming in Scala**
+      - **3.4 Functional Programming in Scala**
          Scala中函数是第一类对象(first-class objects),所以我们可以将一个函数指定为`val`，也可以作为一个参数传递给类(classes)，对象(objects)以及其他函数(functions)。
          - 定义一个函数有两种方法：`def`和`val`。二者在定义和调用上各有不同：
             ```scala
@@ -472,9 +472,10 @@
          println(s"y = $y")
          println(s"y = $y")
          ```
-      - **Anonymous Functions**
-      - **Functional Programming in Chisel (Chisel 函数式编程)**
-      - **Object Oriented Programming (面向对象编程)** 
+         - **Anonymous Functions**
+         - **Functional Programming in Chisel (Chisel 函数式编程)**
+
+      - **3.5 Object Oriented Programming (面向对象编程)** 
          - Abstract Class (抽象类): 定义一些没有具体实现的函数或值，这些函数或者值在子类中必须具体实现。任何对象只能单继承
          - Traits(特征): `Traits`可以定义没有实现的函数和值，这和`abstract class`很像。但和抽象类不同的是，一个类可以继承多个`traits`
                         , 一个`trait`不可以有构造参数。
@@ -521,7 +522,7 @@
          - Case Class
             - `Case Class`允许外部访问类参数
             - 实例化时不需要用`new`,**因为Scala编译器自动为每一个case class生成了一个*companion object*，这个*companion object*为case class包含着一个apply方法**
-            - 自动创建了一个未实现的方法用于访问所有的**类参数**，对于`class`,如果要是访问**类参数**的话需要添加`val`,而在`case class`中则不需要。
+            - 自动创建了一个`unapply`方法用于访问所有的**类参数**，对于`class`,如果要是访问**类参数**的话需要添加`val`,而在`case class`中则不需要。
             - 不可以被继承
 
                ```scala
@@ -565,4 +566,148 @@
             - Module
                在Chisel中，当你希望创建一个硬件对象时，你需要将`Module`作为父类（superclass）。
                继承可能不总是最好的方法去重用，因为组合优先于继承是一个常见规则，但是它依旧是一个很强大的方法。
+
+      - **3.5 types**      
+         - Scala中所有的对象(object)都有一个类型(type),这个类型通常是这个对象对应的类，可以通过getClass获知：
+         ```scala
+            println(10.getClass) // Int
+
+            class MyClass {
+               def myMethod = ???
+            }
+            println(new MyClass().getClass) // class $line6.$read$$iw$$iw$MyClass
+         ```
+
+         - 另外强烈建议所有的函数声明都要定义输入和输出类型，这样可以让Scala编译器发现到不合适的函数使用。
+
+         - `UInt`和`Int`,`Bool`和`Boolean`是不同的，因为Scala的静态类型，所以如果你混用Scala编译器会发现到该错误，
+            在编译期间，编译器会区分Chisel的类型和Scala的类型。
+
+            ```scala
+               val a = Wire(UInt(4.W)) // Chisel type
+               a := 0.U // legal
+               a := 0   // 0 is Int, a Scala type, is a illegal type for here
+
+
+               val bool = Wire(Bool())
+               val boolean: Boolean = false
+
+               when (bool) {...}  // when() expects a Bool, legal
+               if (boolean) {...} // if() expects a Boolean, legal
+
+               if (bool) {...} // illegal
+               when (boolean) {...} // illegal
+
+            ```
+
+         - Scala类型强制(Scala Coercion)
+            - asInstanceOf: x.asInstanceOf[T]表示将x的类型强制转化为类型T，如果不可以强制转化为类型T将会抛出一个异常。
+            ```scala
+               val x: UInt = 3.U
+               try {
+                  println(x.asInstanceOf[Int])
+               } catch {
+                  case e: java.lang.ClassCastException => println("As expected, we can't cast UInt to Int")
+               }
+
+               // 我们可以将UInt转化为Data类型，因为UInt继承于Data
+               println(x.asInstanceOf[Data]) // UInt<2>(3)
+            ```
+         - Chisel中的类型转换(Type Casting in Chisel)
+            - 最经常用的是`asTypeOf()`
+            - 还有`asUInt()`和`asSInt()`
+
+            可查看`test.week3.TupeConvertDemo`
+
+         - 类型匹配(Type Matching)
+            - Match Operator: 当我们尝试编写一个通用类型的生成器时，类型匹配是非常有用的。
+                              需要注意的是Chisel类型不应该有**值匹配**（value matched），
+                              因为Scala的匹配在**circuit elaboration**期间执行，
+                              但是我们想要的是一个`post-elaboration`的比较.
+
+            ```scala
+            class InputIsZero extends Module {
+               val io = IO(new Bundle {
+                  val in  = Input(UInt(16.W))
+                  val out = Output(Bool())
+               })
+               io.out := (io.in match {
+                  // note that case 0.U is an error
+                  case (0.U) => true.B
+                  case _   => false.B
+               })
+            }
+            ```
+         
+         - **Unapply 方法**  
+            apply可以无需通过new操作就可以创建对象，unapply则是apply的方向操作，
+            unapply接收一个对象，然后藏对象中提取值，提取的值通常是用来构造该对象的值。
+            所以unapply可以为match语句在匹配期间同时提供在**类型**和**提取值**上匹配的能力。
+
+            每个`case class`都会创建一个companion object，而companion object中也包含着一个unapply函数。
+
+            ```scala
+            case class SomeGeneratorParameters(
+               someWidth: Int,
+               someOtherWidth: Int = 10,
+               pipelineMe: Boolean = false
+            ) {
+               require(someWidth >= 0)
+               require(someOtherWidth >= 0)
+               val totalWidth = someWidth + someOtherWidth
+            }
+
+            def delay(p: SomeGeneratorParameters): Int = p match {
+               /**
+                 * 如果写成sg: SomeGeneratorParameters(_, _, true) => sg.totalWidth * 3 将不会编译通过
+                 * 写成@可以编译通过并将值赋给sg
+                 */
+               case sg @ SomeGeneratorParameters(_, _, true) => sg.totalWidth * 3
+               case SomeGeneratorParameters(_, sw, false) => sw * 2
+            }
+
+            println(delay(SomeGeneratorParameters(10, 10)))       // 20
+            println(delay(SomeGeneratorParameters(10, 10, true))) // 60 
+            ```
+
+            观察`delay`函数，可以观察到除了匹配每个字符的类型外，我们还可以直接访问内部参数的值，直接匹配内部参数的值。
+            这归因为编译器实现了`unapply`方法，这只是一个语法糖，例如，下面两种语句是等价的：
+            ```scala
+            case p: SomeGeneratorParameters => p.sw * 2
+            case SomeGeneratorParameters(_, sw, _) => sw * 2
+            ```
+
+            下面两句也是等价的,但是第二句除了可以直接访问内部值外仍然可以访问`parent value`
+
+            ```scala
+            case SomeGeneratorParameters(_, sw, true) => sw
+            case sg@SomeGeneratorParameters(_, sw, true) => sw
+            ```
             
+            你可以直接将状态监测放入模式声明中，以下三种情况也是等价的
+
+            ```scala
+            case SomeGeneratorParameters(_, sw, false) => sw * 2
+            case s@SomeGeneratorParameters(_, sw, false) => s.sw * 2
+            case s: SomeGeneratorParameters if s.pipelineMe => s.sw * 2
+
+            ```
+            这些语法都是由类的半生对象包含的unapply方法启用，如果你想使用unapply一个类，但是又不想创建case class，可以手动实现unapply方法：
+
+            ```scala
+            class Boat(val name: String, val length: Int) 
+            object Boat {
+               def unapply(b: Boat): Option[(String, Int)] = Some((b.name, b.length))
+               def apply(name: String, length: Int): Boat = new Boat(name, length)
+            }
+
+            def getSmallBoats(seq: Seq[Boat]): Seq[Boat] = seq.filter {
+               b => b.match {
+                  case Boat(_, length) if length < 60 => true
+                  case Boat(_, _) => false
+               }
+            }
+
+            val boats = Seq(Boat("Santa Maria", 62), Boat("Pinta", 56), Boat("Nina", 50))
+            println(getSmallBoats(boats).map(_.name).mkString(" and ") + " are small boats!")
+            ```

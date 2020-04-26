@@ -1,7 +1,7 @@
 package week3
 
 import chisel3._
-import week2.ShiftRegister
+import chisel3.util.{ShiftRegister, isPow2}
 
 /**
   * 3.5 object oriented programming 
@@ -59,3 +59,11 @@ abstract class AsyncFIFO(depth: Int) extends Module {
         ShiftRegister(write_counter, 2)
     }
 }
+
+// class GrayCounter(val bitwidth: Int) extends NoGlitchCounter(bitwidth) {
+
+// }
+
+// class RingCounter(maxCount: Int) extends NoGlitchCounter(maxCount) {
+
+// }

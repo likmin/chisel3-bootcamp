@@ -59,6 +59,11 @@ object Week3Main {
             (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new MyRoutingArbiter(numChannels = 6), manager) {
                 (c) => new MyRoutingArbiterTester(c)
             }
+        },
+        "graycoder" -> {
+            (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new GrayCoder(bitwidth = 4), manager) {
+                (c) => new GrayCoderTester(c)
+            }
         }
     )
 
@@ -85,6 +90,10 @@ object Week3Main {
             MyFirTester()
         } else if(args.length == 1 && args(0).toLowerCase == "neruon") {
             NeruonTester()
+        } else if(args.length == 1 && args(0).toLowerCase == "typeconvertdemo") {
+            TypeConvertDemo()
+        } else if(args.length == 1 && args(0).toLowerCase == "constantsum") {
+            ConstantSum()
         } else TutorialRunner("Week3Main", tests, args)
     }
 }

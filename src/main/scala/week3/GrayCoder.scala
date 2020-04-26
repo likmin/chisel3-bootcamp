@@ -1,9 +1,10 @@
 package week3
 
 import chisel3._
+import chisel3.util._
 import scala.math.pow
 
-class GrayCoder(bitwidth: Int) extends Module {
+class GrayCoder(val bitwidth: Int) extends Module {
     val io = IO(new Bundle {
         val in = Input(UInt(bitwidth.W))
         val out = Output(UInt(bitwidth.W))
