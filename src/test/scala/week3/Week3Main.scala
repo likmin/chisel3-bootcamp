@@ -64,6 +64,11 @@ object Week3Main {
             (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new GrayCoder(bitwidth = 4), manager) {
                 (c) => new GrayCoderTester(c)
             }
+        },
+        "integrator" -> {
+            (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new Integrator(SInt(4.W), SInt(8.W)), manager) {
+                (c) => new IntegratorSIntTester(c)
+            }
         }
     )
 
@@ -94,6 +99,8 @@ object Week3Main {
             TypeConvertDemo()
         } else if(args.length == 1 && args(0).toLowerCase == "constantsum") {
             ConstantSum()
+        } else if(args.length == 1 && args(0).toLowerCase == "shiftregister") {
+            ShiftRegisterTester()
         } else TutorialRunner("Week3Main", tests, args)
     }
 }

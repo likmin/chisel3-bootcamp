@@ -4,6 +4,9 @@ import week2._
 import week3._
 
 import chisel3._
+import chisel3.experimental._
+import dsptools.numbers._
+
 
 import VerbosityImplicit._
 /**
@@ -68,6 +71,10 @@ object getVerilog {
       case "parameterizedwidthadderwithverbosity" => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6)(Verbose))
       case "binarymealy"                  => chisel3.Driver.emitVerilog(new BinaryMealy(BinaryMealyParams(nStates = 3, s0 = 2, stateTransition, output)))
       case "badtypemodule"                => chisel3.Driver.emitVerilog(new BadTypeModule)
+      case "macforuint"                   => chisel3.Driver.emitVerilog(new Mac(UInt(4.W), UInt(6.W)))
+      case "macforsint"                   => chisel3.Driver.emitVerilog(new Mac(SInt(4.W), SInt(6.W)))
+      case "macforfixedpoint"             => chisel3.Driver.emitVerilog(new Mac(FixedPoint(4.W, 3.BP), FixedPoint(6.W, 4.BP)))
+      case "integrator"                   => chisel3.Driver.emitVerilog(new )
     }
 
   }

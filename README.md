@@ -767,7 +767,171 @@
             Chisel会对很多连接检查类型，包括`Bool/UInt to Clock`。
             对于其他类型，Chisel会允许连接，但是适当的填充或截断位，例：`src/week3/BadTypeModule.scala`
 
-         - 泛型（Type Generics）
-            Classes可以被多态
-            有时，在决定一个多态类型时，Scala编译器需要用户指定类型
+         - 泛型（Type Generics）/ 多态（polymorphic）
+            -  Classes在类型上可以是多态的，例如：sequences，sequences要求知道它所包含的元素类型：
+               ```scala
+               val seq1 = Seq("1", "2", "3") // Type is Seq[String]
+               val seq2 = Seq(1, 2, 3)       // Type is Seq[Int]
+               val seq3 = Seq(1, "2", true)  // Type is Seq[Any]
+               ```
+            -  有时，在决定一个多态类型时，Scala编译器需要用户指定类型
+               ```scala
+               //val default = Seq() // Error!
+               val default = Seq[String]() // User must tell compiler that default is of type Seq[String]
+               Seq(1, "2", true).foldLeft(default){ (strings, next) =>
+                  next match {
+                     case s: String => strings ++ Seq(s)
+                     case _ => strings
+                  }
+               }
+               ```
+            -  函数的输入输出类型也可以表现为多态，下面的实例中定义了一个time的函数，这个函数会测算执行一个代码段花费的时间，
+               它参数化了返回值类型是基于代码段的返回值类型的。
+               
+               > `=> T`表示一个没有参数的匿名函数
+
+               ```scala
+               def time[T](block: => T): T = { // block只有在使用时才运行，调用的时候不必计算出其结果，这叫Call-By-Name。
+                                               // 如果不加=>，称为Call-By-Value
+                  val t0 = System.nanoTime()
+                  val result = block           // 只有在这里，block才运行
+                  val t1 = System.nanoTime()
+                  val timeMillis = (t1 - t0) / 1000000.0
+                  println(s"Block took $timeMillis milliseconds!")
+                  result
+               }
+
+               // Adds 1 through a million
+               val int = time { (1 to 1000000).reduce(_ + _) }    // Block took 836.2001 milliseconds!
+               println(s"Add 1 through a million is $int")        // Add 1 through a million is 1784293664
+
+               // Finds the largest number under a million that, in hex, contains "beef"
+               val string = time {
+                  (1 to 1000000).map(_.toHexString).filter(_.contains("beef")).last
+               }                                                                       // Block took 2800.7824 milliseconds!
+               println(s"The largest number under a million that has beef: $string")   // The largest number under a million that has beef: ebeef
+               ```
+
+         -  Chisel Type Hierarchy
+
+            Chisel3.Data是Chisel硬件类型的基类，`UInt`,`SInt`,`Vec`,`Bundle`等都是`Data`的实例化，如图：
+            ![](img/type_hierarchy.svg)
+            `Data`可以被用于IOs中，并且支持`:=`,wire,reg等。  
+
+
+            在Chisel中，Register是有一个多态代码的好例子，通过查看`RegEnable`的代码实现我们发现，该函数是`[T <: Data]`的模板，
+            也就是说RegEnable可以应用于所有Chisel硬件类型。一些操作符只适合于`Bits`,如`+`,只适用于SInt和UInt，但不适用于Vec和Bundle
+
+            > 这里的[A <: B]表示，A必须是B的子类，[A >: B]表示A必须是B的父类
+
+            在Scala中，除了objects和functions可以被当做函数外，类型（types）也可以被当做函数。
+
+            我们通常需要提供一个类型限制，如上面提到的`[T <: Data]`,若有了该限制，那传入的类型只能是Data的子类，例如`:=3`是非法的，因为3是Scala中的Int 类型，
+            不是Chisel中的UInt类型。
+
+            `week3/ShiftRegister.scala`实现了一个把类型当做参数的shift register
+
+         -  Type Generics with Typeclasses
+            
+            前面的例子只能限制用于`Data`实例的一些简单的操作符，例如`:=`,'RegNext()',当我们生成DSP电路时，
+            我们会使用一些数学操作符，如加和乘。`dsptools`的库提供了一些工具可以参数化DSP生成器。
+
+            这里有一个multiply-accumulate（MAC）的模块，它可以为`FixedPoint`,`SInt`,甚至`DspComplex[T]`（dsptools 提供的一个复杂的函数类型）生成一个multiply-accumulate。
+
+            `A <: B : C `表示A是B的子类，同时也是C类型。
+            ```scala
+            import chisel3.experimental._
+            import dsptools.numbers._
+
+            /**
+              * [T <: Data : Ring] 表示T是Data的子类，同时也是Ring类型，Ring在dsptools中定义为带有+和*De数
+              * Ring的替代品是Real，但并不允许生成一个DspComplex()的MAC，因为complex numbers不是Real
+              */
+            class Mac[T <: Data : Ring](genIn : T, genOut: T) extends Module {
+               val io = IO(new Bundle {
+                  val a = Input(genIn.cloneType)
+                  val b = Input(genIn.cloneType)
+                  val c = Input(genIn.cloneType)
+                  val out = Output(genOut.cloneType)
+               })
+               io.out := io.a * io.b + io.c
+            }
+
+            /**
+              * > test:runMain utils.getVerilog macforuint
+              */
+            println(getVerilog(new Mac(UInt(4.W), UInt(6.W)) ))
+            /*
+               module Mac(
+                  input        clock,
+                  input        reset,
+                  input  [3:0] io_a,
+                  input  [3:0] io_b,
+                  input  [3:0] io_c,
+                  output [5:0] io_out
+               );
+                  wire [7:0] _T; // @[UIntTypeClass.scala 39:41]
+                  wire [7:0] _GEN_0; // @[UIntTypeClass.scala 18:40]
+                  wire [7:0] _T_2; // @[UIntTypeClass.scala 18:40]
+                  assign _T = io_a * io_b; // @[UIntTypeClass.scala 39:41]
+                  assign _GEN_0 = {{4'd0}, io_c}; // @[UIntTypeClass.scala 18:40]
+                  assign _T_2 = _T + _GEN_0; // @[UIntTypeClass.scala 18:40]
+                  assign io_out = _T_2[5:0]; // @[MAC.scala 15:12]
+               endmodule
+            */
+
+            /**
+              * > test:runMain utils.getVerilog macforsint
+              */
+            println(getVerilog(new Mac(SInt(4.W), SInt(6.W)) ))
+            /*
+            module Mac(
+               input        clock,
+               input        reset,
+               input  [3:0] io_a,
+               input  [3:0] io_b,
+               input  [3:0] io_c,
+               output [5:0] io_out
+            );
+               wire [7:0] _T; // @[SIntTypeClass.scala 44:41]
+               wire [7:0] _GEN_0; // @[SIntTypeClass.scala 18:40]
+               wire [7:0] _T_3; // @[SIntTypeClass.scala 18:40]
+               assign _T = $signed(io_a) * $signed(io_b); // @[SIntTypeClass.scala 44:41]
+               assign _GEN_0 = {{4{io_c[3]}},io_c}; // @[SIntTypeClass.scala 18:40]
+               assign _T_3 = $signed(_T) + $signed(_GEN_0); // @[SIntTypeClass.scala 18:40]
+               assign io_out = _T_3[5:0]; // @[MAC.scala 15:12]
+            endmodule
+
+            */
+
+            /**
+              * > test:runMain utils.getVerilog macforfixedpoint
+              */
+            println(getVerilog(new Mac(FixedPoint(4.W, 3.BP), FixedPoint(6.W, 4.BP))))
+
+            /*
+            module Mac(
+               input        clock,
+               input        reset,
+               input  [3:0] io_a,
+               input  [3:0] io_b,
+               input  [3:0] io_c,
+               output [5:0] io_out
+            );
+               wire [7:0] _T; // @[FixedPointTypeClass.scala 43:59]
+               wire [6:0] _GEN_0; // @[FixedPointTypeClass.scala 21:58]
+               wire [7:0] _GEN_1; // @[FixedPointTypeClass.scala 21:58]
+               wire [7:0] _T_3; // @[FixedPointTypeClass.scala 21:58]
+               assign _T = $signed(io_a) * $signed(io_b); // @[FixedPointTypeClass.scala 43:59]
+               assign _GEN_0 = {$signed(io_c), 3'h0}; // @[FixedPointTypeClass.scala 21:58]
+               assign _GEN_1 = {{1{_GEN_0[6]}},_GEN_0}; // @[FixedPointTypeClass.scala 21:58]
+               assign _T_3 = $signed(_T) + $signed(_GEN_1); // @[FixedPointTypeClass.scala 21:58]
+               assign io_out = _T_3[7:2]; // @[MAC.scala 15:12]
+            endmodule
+
+            
+            */
+            ```
+
+         
 
