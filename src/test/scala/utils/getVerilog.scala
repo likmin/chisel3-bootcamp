@@ -67,6 +67,7 @@ object getVerilog {
 
       case "parameterizedwidthadderwithverbosity" => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6)(Verbose))
       case "binarymealy"                  => chisel3.Driver.emitVerilog(new BinaryMealy(BinaryMealyParams(nStates = 3, s0 = 2, stateTransition, output)))
+      case "badtypemodule"                => chisel3.Driver.emitVerilog(new BadTypeModule)
     }
 
   }

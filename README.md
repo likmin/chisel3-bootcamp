@@ -711,3 +711,63 @@
             val boats = Seq(Boat("Santa Maria", 62), Boat("Pinta", 56), Boat("Nina", 50))
             println(getSmallBoats(boats).map(_.name).mkString(" and ") + " are small boats!")
             ```
+         
+         - 偏函数(Partial Functions)
+            偏函数是指只在其输入子集上定义的函数，有点类似`Option`，
+            一个偏函数可能对一个特定的输入没有值，这可以通过`isDefinedAt(...)`定义。
+            `isDefinedAt`是偏函数的一个方法，可以用来决定偏函数是否会接收一个给定的参数。
+
+            可以将偏函数与`orElse`联系在一起。
+
+            调用一个没有定义输入的偏函数将会导致运行时错误，例如，当偏函数的输入是用户定义的时将会发生，所以为了类型安全（type-safe），建议函数的返回值类型为`Option`
+
+            ```scala
+            val partialFunc1: PartialFunction[Int, String] = {
+               case i if (i + 1) % 3 == 0 => "SomeThing"
+            }
+
+            partialFunc1.isDefinedAt(2) // true
+            partialFunc1.isDefinedAt(5) // true
+            partialFunc1.isDefinedAt(1) // false
+            partialFunc1.isDefinedAt(0) // false
+
+            partialFunc1(2) // SomeThing
+
+            try {
+               partialFunc1(0) //将会发生scala.MatchError
+            } catch {
+               case e: scala.MatchError => println("partialFunc1(0) = can't apply PartialFunctions where they are not defined")
+            }
+
+            // 一个小实验，如果返回值为Option类型
+            val partialFunc2: PartialFunction[Int, Option[String]] = {
+               case i if (i + 1) % 3 == 0 => Some("SomeThing")
+            }
+
+            partialFunc2(2) // Some(SomeThing)
+            partialFunc2(0) // 还是会发生scala.MatchError,
+                            // 返回值类型的改变并不影响偏函数的本质，
+                            // 偏函数只受输入的影响
+            
+            val partialFunc3: PartialFunction[Int, String] = {
+               case i if (i + 2) % 3 == 0 => "Something else"
+            }
+
+
+            val partialFunc4 = partialFunc1 orElse partialFunc3
+
+            partialFunc4.isDefinedAt(0) // false
+            partialFunc4.isDefinedAt(1) // true
+            partialFunc4.isDefinedAt(2) // true
+            partialFunc4.isDefinedAt(3) // false
+            partialFunc4(1) // Something else
+            partialFunc4(2) // SomeThing
+            ```
+         - Type Safe Connections
+            Chisel会对很多连接检查类型，包括`Bool/UInt to Clock`。
+            对于其他类型，Chisel会允许连接，但是适当的填充或截断位，例：`src/week3/BadTypeModule.scala`
+
+         - 泛型（Type Generics）
+            Classes可以被多态
+            有时，在决定一个多态类型时，Scala编译器需要用户指定类型
+
