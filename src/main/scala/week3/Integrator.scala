@@ -1,8 +1,6 @@
 package week3
 
 import chisel3._
-import chisel3.util._
-import chisel3.experimental._
 import dsptools.numbers._
 
 /**
@@ -18,13 +16,18 @@ import dsptools.numbers._
 
 //     io.out := RegNext(temp)
 // }
-
-class Integrator[T <: Data] (genIn: T, genReg: T) extends Module {
+// 问题记录：
+class Integrator[T <: Data : Ring] (genIn: T, genReg: T) extends Module {
     val io = IO(new Bundle {
         val in = Input(genIn.cloneType)
         val out = Output(genReg.cloneType)
     })
 
+    /**
+      * 当时泛型这里只写了[T <: Data]，而不是[T <: Data : Ring] ，所以出现了错误：
+      * could not find implicit value for parameter A ：dsptools.numbers.Ring[T]
+      *
+      */
     val reg = RegInit(genReg, Ring[T].zero) // init to zero
 
     reg := reg + io.in

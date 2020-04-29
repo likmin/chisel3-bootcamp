@@ -44,8 +44,8 @@ val defaultVersions = Map(
   "chisel3" -> "3.2.+",
   "chisel-iotesters" -> "1.3.+",
   "chisel-testers2" -> "0.1.0",
-  "dsptools" -> "1.2.0",
-  "rocket-dsptools" -> "1.2.0",
+  "dsptools" -> "1.2.+",
+  "rocket-dsptools" -> "1.2.+",
   "firrtl-diagrammer" -> "1.1.0"
   )
 

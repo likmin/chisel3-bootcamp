@@ -57,3 +57,5 @@ test_run_dir/
 *.v
 *.fir
 *.json
+
+.idea
