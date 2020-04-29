@@ -74,7 +74,6 @@ object getVerilog {
       case "macforuint"                   => chisel3.Driver.emitVerilog(new Mac(UInt(4.W), UInt(6.W)))
       case "macforsint"                   => chisel3.Driver.emitVerilog(new Mac(SInt(4.W), SInt(6.W)))
       case "macforfixedpoint"             => chisel3.Driver.emitVerilog(new Mac(FixedPoint(4.W, 3.BP), FixedPoint(6.W, 4.BP)))
-      case "integrator"                   => chisel3.Driver.emitVerilog(new )
     }
 
   }

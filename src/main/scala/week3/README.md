@@ -325,6 +325,7 @@
         > `reduce`和`fold`还有一点不同就是，List为空时，`reduce`不可以操作，但`fold`可以
 
 
+
 3.6 Functional Programming in Scala  
 Scala中函数是第一类对象(first-class objects),所以我们可以将一个函数指定为`val`，也可以作为一个参数传递给类(classes)，对象(objects)以及其他函数(functions)。  
 
@@ -380,14 +381,20 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
        - **Anonymous Functions**
        - **Functional Programming in Chisel (Chisel 函数式编程)**
 
+
+
 3.7 Object Oriented Programming (面向对象编程)   
+
    - Abstract Class (抽象类): 定义一些没有具体实现的函数或值，这些函数或者值在子类中必须具体实现。任何对象只能单继承
+
    - Traits(特征): `Traits`可以定义没有实现的函数和值，这和`abstract class`很像。但和抽象类不同的是，一个类可以继承多个`traits`
                         , 一个`trait`不可以有构造参数。
                        
             
             > 通常，除非你确定要强制执行抽象类的单继承限制，否则始终对抽象类使用特征。
+            
    - Objects: Scala 对于这些单例类有一个语言特点，称为**objects**，实例化时不需要new关键字，直接调用即可。这和Java的`static classes`很像。
+
    - Companion Objects: 当一个类和一个**object** 有相同的名字时，我们就称这个**object**为**companion object**。
            
         ```scala
@@ -403,13 +410,14 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
         
         为什么要用`companion object`呢？  
         - 为一个类创建多个构造函数
-        - 可以在类构造函数执行之前或之后执行代码
-        - 包含与类相关的常量
-          
         
-      ​    
-      ​      
-      实例如下：  
+        - 可以在类构造函数执行之前或之后执行代码
+        
+        - 包含与类相关的常量
+        
+        
+        
+        实例如下：  
       
         ```scala
          object Animal {
@@ -422,7 +430,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             def apply(): Animal = apply(defaultName)
          }
          class Animal(name: String, order: Int) {
-      def info: String = s"Hi my name is $name, and I'm $order in line!"
+     def info: String = s"Hi my name is $name, and I'm $order in line!"
      }
             
          val bunny = Animal.apply("Hopper") // Calls the Animal factory method
@@ -473,6 +481,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             }
             ```
 ​            
+        
    - inheritance With Chisel  
      Chisel中自定义的module都是继承于**Module**基类。
      每个自定义的IO都继承于`Bundle`基类，在一些特殊情况下，Bundle的supertype为`Record`。
@@ -481,8 +490,11 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
    - Module  
      在Chisel中，当你希望创建一个硬件对象时，你需要将`Module`作为父类（superclass）。
      继承可能不总是最好的方法去重用，因为组合优先于继承是一个常见规则，但是它依旧是一个很强大的方法。
+     
+     
 
-3.6 types      
+3.8 types      
+
    - Scala中所有的对象(object)都有一个类型(type),这个类型通常是这个对象对应的类，可以通过getClass获知：
         ```scala
         println(10.getClass) // Int
@@ -527,14 +539,15 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                // 我们可以将UInt转化为Data类型，因为UInt继承于Data
                println(x.asInstanceOf[Data]) // UInt<2>(3)
             ```
-        - Chisel中的类型转换(Type Casting in Chisel)
-            - 最经常用的是`asTypeOf()`
-            - 还有`asUInt()`和`asSInt()`
+            
+   - Chisel中的类型转换(Type Casting in Chisel)  
+        - 最经常用的是`asTypeOf()`
+        - 还有`asUInt()`和`asSInt()`
         
-            可查看`test.week3.TupeConvertDemo`
+          可查看`test.week3.TupeConvertDemo`
         
-        - 类型匹配(Type Matching)
-            - Match Operator: 当我们尝试编写一个通用类型的生成器时，类型匹配是非常有用的。
+   - 类型匹配(Type Matching)
+        - Match Operator: 当我们尝试编写一个通用类型的生成器时，类型匹配是非常有用的。
                               需要注意的是Chisel类型不应该有**值匹配**（value matched），
                               因为Scala的匹配在**circuit elaboration**期间执行，
                               但是我们想要的是一个`post-elaboration`的比较.
@@ -553,7 +566,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             }
             ```
         
-        - **Unapply 方法**  
+   - **Unapply 方法**  
             apply可以无需通过new操作就可以创建对象，unapply则是apply的方向操作，
             unapply接收一个对象，然后藏对象中提取值，提取的值通常是用来构造该对象的值。
             所以unapply可以为match语句在匹配期间同时提供在**类型**和**提取值**上匹配的能力。
@@ -625,7 +638,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             println(getSmallBoats(boats).map(_.name).mkString(" and ") + " are small boats!")
             ```
         
-        - 偏函数(Partial Functions)
+   - 偏函数(Partial Functions)
             偏函数是指只在其输入子集上定义的函数，有点类似`Option`，
             一个偏函数可能对一个特定的输入没有值，这可以通过`isDefinedAt(...)`定义。
             `isDefinedAt`是偏函数的一个方法，可以用来决定偏函数是否会接收一个给定的参数。
@@ -675,18 +688,21 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             partialFunc4(1) // Something else
             partialFunc4(2) // SomeThing
             ```
-        - Type Safe Connections  
+            
+   - Type Safe Connections  
             Chisel会对很多连接检查类型，包括`Bool/UInt to Clock`。
         对于其他类型，Chisel会允许连接，但是适当的填充或截断位，例：`src/week3/BadTypeModule.scala`
             
-        - 泛型（Type Generics）/ 多态（polymorphic）
-            -  Classes在类型上可以是多态的，例如：sequences，sequences要求知道它所包含的元素类型：
+   - 泛型（Type Generics）/ 多态（polymorphic）
+        -  Classes在类型上可以是多态的，例如：sequences，sequences要求知道它所包含的元素类型：
+               
                ```scala
                val seq1 = Seq("1", "2", "3") // Type is Seq[String]
                val seq2 = Seq(1, 2, 3)       // Type is Seq[Int]
                val seq3 = Seq(1, "2", true)  // Type is Seq[Any]
                ```
-            -  有时，在决定一个多态类型时，Scala编译器需要用户指定类型
+        -  有时，在决定一个多态类型时，Scala编译器需要用户指定类型
+        
                ```scala
                //val default = Seq() // Error!
                val default = Seq[String]() // User must tell compiler that default is of type Seq[String]
@@ -697,11 +713,11 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                   }
                }
                ```
-            -  函数的输入输出类型也可以表现为多态，下面的实例中定义了一个time的函数，这个函数会测算执行一个代码段花费的时间，
+        -  函数的输入输出类型也可以表现为多态，下面的实例中定义了一个time的函数，这个函数会测算执行一个代码段花费的时间，
                它参数化了返回值类型是基于代码段的返回值类型的。
                
                 > `=> T`表示一个没有参数的匿名函数
-           
+              
            ```scala
             def time[T](block: => T): T = { // block只有在使用时才运行，调用的时候不必计算出其结果，这叫Call-By-Name。
                                             // 如果不加=>，称为Call-By-Value
@@ -722,10 +738,10 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                (1 to 1000000).map(_.toHexString).filter(_.contains("beef")).last
             }                                                                       // Block took 2800.7824 milliseconds!
             println(s"The largest number under a million that has beef: $string")   // The largest number under a million that has beef: ebeef
-               
-            ```
-
-        -  Chisel Type Hierarchy
+       
+           ```
+        
+   -  Chisel Type Hierarchy
            
             Chisel3.Data是Chisel硬件类型的基类，`UInt`,`SInt`,`Vec`,`Bundle`等都是`Data`的实例化，如图：
             ![](../../../../img/type_hierarchy.svg)  
@@ -743,9 +759,9 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             
             `week3/ShiftRegister.scala`实现了一个把类型当做参数的shift register
             
-        -  Type Generics with Typeclasses
+   -  Type Generics with Typeclasses
            
-            前面的例子只能限制用于`Data`实例的一些简单的操作符，例如`:=`,`RegNext()`,当我们生成DSP电路时，
+        前面的例子只能限制用于`Data`实例的一些简单的操作符，例如`:=`,`RegNext()`,当我们生成DSP电路时，
         我们会使用一些数学操作符，如加和乘。`dsptools`的库提供了一些工具可以参数化DSP生成器。
             
             这里有一个multiply-accumulate（MAC）的模块，它可以为`FixedPoint`,`SInt`,甚至`DspComplex[T]`（dsptools 提供的一个复杂的函数类型）生成一个multiply-accumulate。
@@ -766,9 +782,9 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                   val b = Input(genIn.cloneType)
                   val c = Input(genIn.cloneType)
                   val out = Output(genOut.cloneType)
-               })
+            })
                io.out := io.a * io.b + io.c
-
+        
             }
         
             // verilog代码生成 
@@ -783,4 +799,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             println(getVerilog(new Mac(FixedPoint(4.W, 3.BP), FixedPoint(6.W, 4.BP))))
                
             ```
-        ​           
+
+
+   - 创建自定义的类型  
+   ​  

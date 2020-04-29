@@ -1,7 +1,7 @@
 package week3
 
 import chisel3._
-import chisel3.iotesters.{TesterOptionsManager, Driver, PeekPokeTester}
+import chisel3.iotesters.TesterOptionsManager
 import utils.TutorialRunner
 
 object Week3Main {
@@ -23,7 +23,9 @@ object Week3Main {
     
     val testParams = BinaryMealyParams(nStates = 3, s0 = 2, stateTransition, output)
     // used to test BinaryMealy end!
-    
+
+    implicit object SignMagnitudeRingImpl extends SignMagnitudeRing
+
     val tests = Map(
         "sort4ascending" -> {
             (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new Sort4(true), manager) {
@@ -68,6 +70,11 @@ object Week3Main {
         "integrator" -> {
             (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new Integrator(SInt(4.W), SInt(8.W)), manager) {
                 (c) => new IntegratorSIntTester(c)
+            }
+        },
+        "signmagnitudemac" -> {
+            (manager: TesterOptionsManager) => iotesters.Driver.execute(() => new Mac(new SignMagnitude(Some(4)), new SignMagnitude(Some(5))),manager){
+                c => new SignMagnitudeMACTester(c)
             }
         }
     )
