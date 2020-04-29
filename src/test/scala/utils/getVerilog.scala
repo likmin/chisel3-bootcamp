@@ -2,13 +2,11 @@ package utils
 
 import week2._
 import week3._
-
 import chisel3._
 import chisel3.experimental._
 import dsptools.numbers._
-
-
 import VerbosityImplicit._
+import week4.DelayBy2
 /**
   * 用于生成Verilog代码，调用方法：
   * 1.打开sbt
@@ -74,6 +72,8 @@ object getVerilog {
       case "macforuint"                   => chisel3.Driver.emitVerilog(new Mac(UInt(4.W), UInt(6.W)))
       case "macforsint"                   => chisel3.Driver.emitVerilog(new Mac(SInt(4.W), SInt(6.W)))
       case "macforfixedpoint"             => chisel3.Driver.emitVerilog(new Mac(FixedPoint(4.W, 3.BP), FixedPoint(6.W, 4.BP)))
+
+      case "delayby2"                     => chisel3.Driver.emitVerilog(new DelayBy2(4))
     }
 
   }
