@@ -366,7 +366,134 @@
 
       还有一些其他expression包括：`SubField`,`SubIndex`,`SubAccess`,`Mux`,`ValidIf`等，更多细节可以查看 [firrtl/src/main/scala/firrtl/ir/IR.scala](https://github.com/ucb-bar/firrtl/blob/master/src/main/scala/firrtl/ir/IR.scala) 和 [The FIRRTL Specification](https://github.com/ucb-bar/firrtl/blob/master/spec/spec.pdf).
 
-  - 现在可以回头查看
+    
+  
 
 
 
+#### 4.2 Firrtl AST Traversal
+
+- ##### Understanding IR node children
+
+  ​		写一个Firrtl通行证通常要写一个遍历Firrtl数据结构的函数，以收集信息或将IR节点替换为新的IR节点。
+
+  IR数据结构是一个树，树上的每个IR节点都有一些孩子节点，这些孩子节点可以有更多的孩子节点，如果一个IR节点没有孩子则称为叶子。
+
+  ​		不同的IR节点有不同的孩子类型，如下图所示：
+
+  ```scala
+  	      Circuit
+  	         |
+  	       DefModule
+  		  /         \
+           /           \
+          /             \
+  	   /                \
+  	  /                   \
+     Port                Statement
+      |				 /      |      \
+     /  \             /       |       \
+   Type Direction Statement Expression Type
+   /  \					   /      \ 
+  Type Width				EXpression Type
+  ```
+
+  
+
+- ##### The map function
+
+  为了写一个可以遍历`Circuit`函数，我们需要理解一个函数编程概念——map，
+
+  - 理解Seq.map
+
+    Seq中map就是将序列中每个元素按照**指定的函数规则**映射到另一个新的序列，例如：
+
+    ```scala
+    val s = Seq("a", "b", "c")
+    
+    // 方法一：使用匿名函数
+    s.map(x => x + x)	// Seq("aa", "bb", "cc")
+    
+    // 方法二：使用显示函数
+    def f(x: String): String = x + x
+    s.map(f)		   // Seq("aa", "bb", "cc")
+    ```
+
+  - 理解Firrtl中的map
+
+    Firrtl中利用`mapping`的概念，在IR节点上创造我们自己自定义的`map`方法，假设我们有一个`DoPrim`表达式想要表示 1 + 1，这里可以被描述成一个带有`DoPrim`根节点的类似于树的表达式：
+
+    ```scala
+    	  DoPrim
+         /      \
+    UIntValue  UIntValue
+    ```
+
+    如果我们有一个函数`f`，这个函数`f`带有一个名为`Expression`参数，且返回一个新的`Expression`，我们将这个函数`f`映射到给定IR节点（就像DoPrim）的所有孩子`Expression`中，这样会返回一个新的`DoPrim`,它的孩子是对变为了`f(Expression)`。
+
+    ```scala
+    		DoPrim
+    		/    \
+    f(UIntValue) f(UIntValue)
+    ```
+
+    有时候IR节点的孩子节点有很多类型，例如，`Conditionally`同时拥有`Expression`和`Statement`两个孩子。在这种情况下，`map`只会讲其函数应用到与该函数参数类型匹配的孩子节点上。例如：
+
+    ```scala
+    val c = Conditionally(info, e, s1, s2) // e: Expression, s1, s2: Statement, info: FileInfo
+    def fExp(e: Expression): Expression = ...
+    def fStmt(s: Statement): Statement = ...
+    c.map(fExp)  // Conditionally(fExp(e), s1, s2)
+    c.map(fStmt) // Conditionally(e, fStmt(s1), fStmt(s2))
+    
+    // 也可以这样表示
+    c map fExp
+    c map fStmt
+    ```
+
+    
+
+- ##### Pre-order traversal
+
+  ​		为了遍历一颗Firrtl树，我们利用`map`去编写一个可以访问每个孩子的每个节点的递归方程。
+
+  ​		假设我们想要收集设计中声明的每个寄存器的名称，我们必须访问每个`Statement`，然而一些`Statement`节点可以有`子Statement`，因此我们需要编写一个函数，这个函数可以同时检查输入参数是否为一个`DefRegister`，如果不是，该函数会递归的将`f`应用到所有输入参数的所有`Statement `的孩子上。
+
+  ​		下述函数`f`和我们描述的函数非常相似，但是带有两个参数，一个可变的寄存器名称的哈希集，一个`Statement`。利用函数的局部套用（Currying），我们可以只传递第一个参数，这是返回一个新的有指定类型签名的函数（Statement => Statement）.
+
+  ```scala
+  def f(regNames: mutable.HashSet[String]())(s: Statement): Statement = s match {
+      // 如果是寄存器，将name添加到regNames中
+      case r: DefRegister => 
+      	regNames += r.name
+      	r // 返回未改变的参数，因为DefRegister没有子Statement  
+      
+      // 如果不是register，将f(regNames)应用到所有的子Statement
+      case _ => s map f(regNames) 
+  }
+  ```
+
+  ​		这种模式在Firrtl中是非常常见的，称为前序遍历，因为递归函数在递归应用其孩子节点前，首先匹配原始IR节点
+
+
+
+- ##### Post-order traversal
+
+  ​		上面的案例也可以用`后序遍历`编写：
+
+  ```scala
+  def f(regNames: mutbale.HashSet[String]())(s: Statement): Statement = {
+      // 不是立刻递归到孩子节点再匹配
+      s map f(regName) match {
+          case r: DefRegister => 
+          	regNames += r.name
+          	r
+          
+          case _ => s
+      }
+  }
+  ```
+
+  
+
+  
