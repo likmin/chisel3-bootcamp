@@ -1,6 +1,6 @@
 ## week4
 
-### **4.1 什么是FIRRTL**  
+#### **4.1 什么是FIRRTL**  
 
 - #### 什么是FIRRTL
 
@@ -371,7 +371,7 @@
 
 
 
-#### 4.2 Firrtl AST Traversal
+#### 4.2 Firrtl 抽象语法树的遍历（Firrtl AST Traversal）
 
 - ##### Understanding IR node children
 
@@ -496,4 +496,301 @@
 
   
 
+#### 4.3 Firrtl中常用成语（Firrtl Common Idioms）
+
+- 添加状态（Adding Statements）
+
+  假设我们想要写一个拆分嵌套的`DOPrim表达式`的pass，如下：
+
+  ```scala
+  circuit Top :
+  	module Top :
+  	 input x: UInt<3>
+  	 input y: UInt<3>
+  	 input z: UInt<3>
+  	 Output o: UInt<3>
+  	 o <= add(x, add(y, z))
+  ```
+
+  转化为下面的形式：
+
+  ```scala
+  circuit Top :
+  	module Top :
+  	 input x: UInt<3>
+  	 input y: UInt<3>
+  	 input z: UInt<3>
+  	 Output o: UInt<3>
+  	 node GEN_1 = add(y, z)
+  	 o <= add(x, GEN_1)
+  ```
+
+  我们首先需要遍历抽象语法树中的每一个`Statement`和`Expression`。然后，当我们查到一个`DoPrim`时，我们需要添加新的`DefNode`到`module`的主题中，并且插入对该`DefNode`的引用来代替`DoPrim`，下面的代码实现了这一功能，并且消息令牌，注意`Namespace`是 [Namespace.scala](https://github.com/ucb-bar/firrtl/blob/master/src/main/scala/firrtl/Namespace.scala).中的使用函数
+
+  ```scala
+  object Splitter extends Pass {
+    def name = "Splitter!"
+    /** Run splitM on every module **/
+    def run(c: Circuit): Circuit = c.copy(modules = c.modules map(splitM(_)))
   
+    /** Run splitS on the body of every module **/
+    def splitM(m: DefModule): DefModule = m map splitS(Namespace(m))
+  
+    /** Run splitE on all children Expressions.
+      * If stmts contain extra statements, return a Block containing them and 
+      *    the new statement; otherwise, return the new statement. */
+    def splitS(namespace: Namespace)(s: Statement): Statement = {
+      val block = mutable.ArrayBuffer[Statement]()
+      s match {
+        case s: HasInfo => 
+          val newStmt = s map splitE(block, namespace, s.info)
+          block.length match {
+            case 0 => newStmt
+            case _ => Block(block.toSeq :+ newStmt)
+          }
+        case s => s map splitS(namespace)
+    }
+  
+    /** Run splitE on all children expressions.
+      * If e is a DoPrim, add a new DefNode to block and return reference to
+      * the DefNode; otherwise return e.*/
+    def splitE(block: mutable.ArrayBuffer[Statement], namespace: Namespace, 
+               info: Info)(e: Expression): Expression = e map splitE(block, namespace, info) match {
+      case e: DoPrim =>
+        val newName = namespace.newTemp
+        block += DefNode(info, newName, e)
+        Ref(newName, e.tpe)
+      case _ => e
+    }
+  }
+  ```
+
+- 删除状态（Deleting statements）
+
+  假设我们想要编写一个内联所有值为文本DefNodes的pass，如下：
+
+  ```scala
+  circuit Top:
+  	module Top:
+  	 input x: UInt<3>
+  	 output o: UInt<4>
+  	 node y = UInt(1)
+  	 o <= add(x, y)
+  ```
+
+  转化为：
+
+  ```scala
+  circuit Top:
+  	module Top:
+  	 input x: UInt<3>
+  	 output o: UInt<4>
+  	 o <= add(x, UInt(1))
+  ```
+
+  首先我们需要将抽象语法树转化出每一个状态和表达式，然后，当我们查到一个DefNode指向一个文本是，我们将其存入Hashmap中，然后返回一个`EmptyStmt`(因此删除这个DefNode)。然后，无论什么时候我们查看到一个指向已删除的DefNode的引用，我们必须插入相应的文本。
+
+  ```scala
+  object Inliner extends Pass {
+    def name = "Inliner!"
+    /** Run inlineM on every module **/
+    def run(c: Circuit): Circuit = c.copy(modules = c.modules map(inlineM(_)))
+  
+    /** Run inlineS on the body of every module **/
+    def inlineM(m: DefModule): DefModule = m map inlineS(mutable.HashMap[String, Expression]())
+  
+    /** Run inlineE on all children Expressions, and then run inlineS on children statements.
+      * If statement is a DefNode containing a literal, update values and
+      *   return EmptyStmt; otherwise return statement. */
+    def inlineS(values: mutable.HashMap[String, Expression])(s: Statement): Statement =
+      s map inlineE(values) map inlineS(values) match {
+        case d: DefNode => d.value match {
+          case l: Literal =>
+            values(d.name) = l
+            EmptyStmt
+          case _ => d
+        }
+        case o => o 
+      }
+  
+    /** If e is a reference whose name is contained in values, 
+      *   return values(e.name); otherwise run inlineE on all 
+      *   children expressions.*/
+    def inlineE(values: mutable.HashMap[String, Expression])(e: Expression): Expression = e match {
+      case e: Ref if values.contains(e.name) => values(e.name)
+      case _ => e map inlineE(values)
+    }
+  }
+  ```
+
+  
+
+
+
+#### 4.4 Firrtl add ops per module
+
+​	这里的AnalyzeCircuit转换会遍历`firrtl.ir.Circuit`，并记录每个模块发现的add ops。
+
+- 统计每个模块中的加法器
+
+  一个Firrtl电路是利用一个树的表达方式表示的：
+
+  - 一个Firrtl的`Circuit`包含一系列的`DefModule`
+  - 一个`DefModule`包含一系列的`Port`，可能有一个`Statement`
+  - 一个`Statement`可以包含其他`Statement`或`Expression`
+  - 一个`Expression`可以包含其他`Expression`
+
+  为了访问到电路中所有的Firrtl IR节点，我们编写了一个可以递归遍历这棵树的函数，要记录统计数据，我们将传递一个`Ledger`类，在遇到`add op`时使用它。
+
+  ```scala
+  class Ledger {
+    import firrtl.Utils
+    private var moduleName: Option[String] = None
+    private val modules = mutable.Set[String]()
+    private val moduleAddMap = mutable.Map[String, Int]()
+    def foundAdd(): Unit = moduleName match {
+      case None => sys.error("Module name not defined in Ledger!")
+      case Some(name) => moduleAddMap(name) = moduleAddMap.getOrElse(name, 0) + 1
+    }
+    def getModuleName: String = moduleName match {
+      case None => Utils.error("Module name not defined in Ledger!")
+      case Some(name) => name
+    }
+    def setModuleName(myName: String): Unit = {
+      modules += myName
+      moduleName = Some(myName)
+    }
+    def serialize: String = {
+      modules map { myName =>
+        s"$myName => ${moduleAddMap.getOrElse(myName, 0)} add ops!"
+      } mkString "\n"
+    }
+  }
+  ```
+
+  现在我们定义一个可以遍历电路并且当遇到一个`adder`(DoPrim with op argument `Add`)时可以更新我们的Ledger的FIRRTL装换器.
+
+  花费一些时间去理解`walkModule`,`walkStatement`,`walkExpression`是怎样遍历**FIRRTLAST**所有的`DeffModule`,`Statement`和`Expression`.
+
+  问题：
+
+  - 为什么`walkModule`不去调用`walkExpression`
+  - 为什么`walkExpression`要后序遍历（post-order traversal）
+  - 你可以将`walkExpression`修改为前序遍历吗
+
+  ```scala
+  class AnalyzeCircuit extends firrtl.Transform {
+    import firrtl._
+    import firrtl.ir._
+    import firrtl.Mappers._
+    import firrtl.Parser._
+    import firrtl.annotations._
+    import firrtl.PrimOps._
+      
+    // Requires the [[Circuit]] form to be "low"
+    def inputForm = LowForm
+    // Indicates the output [[Circuit]] form to be "low"
+    def outputForm = LowForm
+  
+    // Called by [[Compiler]] to run your pass. [[CircuitState]] contains
+    // the circuit and its form, as well as other related data.
+    def execute(state: CircuitState): CircuitState = {
+      val ledger = new Ledger()
+      val circuit = state.circuit
+  
+      // Execute the function walkModule(ledger) on every [[DefModule]] in
+      // circuit, returning a new [[Circuit]] with new [[Seq]] of [[DefModule]].
+      //   - "higher order functions" - using a function as an object
+      //   - "function currying" - partial argument notation
+      //   - "infix notation" - fancy function calling syntax
+      //   - "map" - classic functional programming concept
+      //   - discard the returned new [[Circuit]] because circuit is unmodified
+      circuit map walkModule(ledger)
+  
+      // Print our ledger
+      println(ledger.serialize)
+  
+      // Return an unchanged [[CircuitState]]
+      state
+    }
+  
+    // Deeply visits every [[Statement]] in m.
+    def walkModule(ledger: Ledger)(m: DefModule): DefModule = {
+      // Set ledger to current module name
+      ledger.setModuleName(m.name)
+  
+      // Execute the function walkStatement(ledger) on every [[Statement]] in m.
+      //   - return the new [[DefModule]] (in this case, its identical to m)
+      //   - if m does not contain [[Statement]], map returns m.
+      m map walkStatement(ledger)
+    }
+  
+    // Deeply visits every [[Statement]] and [[Expression]] in s.
+    def walkStatement(ledger: Ledger)(s: Statement): Statement = {
+  
+      // Execute the function walkExpression(ledger) on every [[Expression]] in s.
+      //   - discard the new [[Statement]] (in this case, its identical to s)
+      //   - if s does not contain [[Expression]], map returns s.
+      s map walkExpression(ledger)
+  
+      // Execute the function walkStatement(ledger) on every [[Statement]] in s.
+      //   - return the new [[Statement]] (in this case, its identical to s)
+      //   - if s does not contain [[Statement]], map returns s.
+      s map walkStatement(ledger)
+    }
+  
+    // Deeply visits every [[Expression]] in e.
+    //   - "post-order traversal" - handle e's children [[Expression]] before e
+    def walkExpression(ledger: Ledger)(e: Expression): Expression = {
+  
+      // Execute the function walkExpression(ledger) on every [[Expression]] in e.
+      //   - return the new [[Expression]] (in this case, its identical to e)
+      //   - if s does not contain [[Expression]], map returns e.
+      val visited = e map walkExpression(ledger)
+  
+      visited match {
+        // If e is an adder, increment our ledger and return e.
+        case DoPrim(Add, _, _, _) =>
+          ledger.foundAdd
+          e
+        // If e is not an adder, return e.
+        case notadd => notadd
+      }
+    }
+  }
+  ```
+
+  
+
+- Running our Transform
+
+  现在我们已经定义好了，让我们在其上面运行一个Chisel设计，先定一个Chisel模块
+
+  ```scala
+  // Chisel stuff
+  import chisel3._
+  import chisel3.util._
+  
+  class AddMe(nInputs: Int, width: Int) extends Module {
+    val io = IO(new Bundle {
+      val in  = Input(Vec(nInputs, UInt(width.W)))
+      val out = Output(UInt(width.W))
+    })
+    io.out := io.in.reduce(_ +& _)
+  }
+  ```
+
+  接下来，我们详细说明进入FIRRTLAST语法
+
+  ```scala
+  val firrtlSerialization = chisel3.Driver.emit(() => new AddMe(8, 4))
+  ```
+
+  最后，让我们将FIRRTL编译成Verilog代码，但将我们自定义的转换器添加到编译过程。注意，它将会打印出其发现的`add ops`
+
+  ```scala
+  val verilog = compileFIRRTL(firrtlSerialization, new firrtl.VerilogCompiler(), Seq(new AnalyzeCircuit()))
+  ```
+
+  这里的`compileFIRRTL`函数是这里定义的，在未来的章节中，我们会描述插入自定义转换器的处理过程。
+
