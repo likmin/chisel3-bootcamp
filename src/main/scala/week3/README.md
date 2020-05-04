@@ -1,6 +1,7 @@
+## week3
+
 3.1 getOrElse : 对于`Map`或`Option`通常通过`get`方法获得数据——如果有则返回的数据类型为Some()类型，
                     否则会出错返回`None`类型，这时候我们可以通过`getOrElse`方法指定在出错时的默认值
-      
 3.2 Match/Case Statements : Scala中提供了多种match模式
    - Value Matching : match的标准取决Value值的大小
    - Multiple Value Matching : 
@@ -418,7 +419,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
         
         
         实例如下：  
-      
+            
         ```scala
          object Animal {
             val defaultName = "Bigfoot"
@@ -439,7 +440,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
          println(cat.info) // Hi my name is Whiskers, and I'm 2 in line!
          val yeti = Animal()                // Calls the Animal factory method
          println(yeti.info) // Hi my name is Bigfoot, and I'm 3 in line!
-       ```
+     ```
      
    - Case Class  
         - `Case Class`允许外部访问类参数
@@ -539,7 +540,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                // 我们可以将UInt转化为Data类型，因为UInt继承于Data
                println(x.asInstanceOf[Data]) // UInt<2>(3)
             ```
-            
+        
    - Chisel中的类型转换(Type Casting in Chisel)  
         - 最经常用的是`asTypeOf()`
         - 还有`asUInt()`和`asSInt()`
@@ -570,9 +571,9 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             apply可以无需通过new操作就可以创建对象，unapply则是apply的方向操作，
             unapply接收一个对象，然后藏对象中提取值，提取的值通常是用来构造该对象的值。
             所以unapply可以为match语句在匹配期间同时提供在**类型**和**提取值**上匹配的能力。
-        
+                
             每个`case class`都会创建一个companion object，而companion object中也包含着一个unapply函数。
-        
+                
             ```scala
             case class SomeGeneratorParameters(
                someWidth: Int,
@@ -583,7 +584,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                require(someOtherWidth >= 0)
                val totalWidth = someWidth + someOtherWidth
             }
-        
+                
             def delay(p: SomeGeneratorParameters): Int = p match {
                /**
                  * 如果写成sg: SomeGeneratorParameters(_, _, true) => sg.totalWidth * 3 将不会编译通过
@@ -592,7 +593,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                case sg @ SomeGeneratorParameters(_, _, true) => sg.totalWidth * 3
                case SomeGeneratorParameters(_, sw, false) => sw * 2
             }
-        
+                
             println(delay(SomeGeneratorParameters(10, 10)))       // 20
             println(delay(SomeGeneratorParameters(10, 10, true))) // 60 
             ```
@@ -605,35 +606,35 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             ```
         
             下面两句也是等价的,但是第二句除了可以直接访问内部值外仍然可以访问`parent value`
-        
+                
             ```scala
             case SomeGeneratorParameters(_, sw, true) => sw
             case sg@SomeGeneratorParameters(_, sw, true) => sw
             ```
-            
+           
             你可以直接将状态监测放入模式声明中，以下三种情况也是等价的
-        
+                
             ```scala
             case SomeGeneratorParameters(_, sw, false) => sw * 2
             case s@SomeGeneratorParameters(_, sw, false) => s.sw * 2
             case s: SomeGeneratorParameters if s.pipelineMe => s.sw * 2
             ```
             这些语法都是由类的半生对象包含的unapply方法启用，如果你想使用unapply一个类，但是又不想创建case class，可以手动实现unapply方法：
-        
+                
             ```scala
             class Boat(val name: String, val length: Int) 
             object Boat {
                def unapply(b: Boat): Option[(String, Int)] = Some((b.name, b.length))
                def apply(name: String, length: Int): Boat = new Boat(name, length)
             }
-        
+                
             def getSmallBoats(seq: Seq[Boat]): Seq[Boat] = seq.filter {
                b => b.match {
                   case Boat(_, length) if length < 60 => true
                   case Boat(_, _) => false
                }
             }
-        
+                
             val boats = Seq(Boat("Santa Maria", 62), Boat("Pinta", 56), Boat("Nina", 50))
             println(getSmallBoats(boats).map(_.name).mkString(" and ") + " are small boats!")
             ```
@@ -642,34 +643,34 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             偏函数是指只在其输入子集上定义的函数，有点类似`Option`，
             一个偏函数可能对一个特定的输入没有值，这可以通过`isDefinedAt(...)`定义。
             `isDefinedAt`是偏函数的一个方法，可以用来决定偏函数是否会接收一个给定的参数。
-        
+                
             可以将偏函数与`orElse`联系在一起。
-        
+                
             调用一个没有定义输入的偏函数将会导致运行时错误，例如，当偏函数的输入是用户定义的时将会发生，所以为了类型安全（type-safe），建议函数的返回值类型为`Option`
-        
+                
             ```scala
             val partialFunc1: PartialFunction[Int, String] = {
                case i if (i + 1) % 3 == 0 => "SomeThing"
             }
-        
+                
             partialFunc1.isDefinedAt(2) // true
             partialFunc1.isDefinedAt(5) // true
             partialFunc1.isDefinedAt(1) // false
             partialFunc1.isDefinedAt(0) // false
-        
+                
             partialFunc1(2) // SomeThing
-        
+                
             try {
                partialFunc1(0) //将会发生scala.MatchError
             } catch {
                case e: scala.MatchError => println("partialFunc1(0) = can't apply PartialFunctions where they are not defined")
             }
-        
+                
             // 一个小实验，如果返回值为Option类型
             val partialFunc2: PartialFunction[Int, Option[String]] = {
                case i if (i + 1) % 3 == 0 => Some("SomeThing")
             }
-        
+                
             partialFunc2(2) // Some(SomeThing)
             partialFunc2(0) // 还是会发生scala.MatchError,
                             // 返回值类型的改变并不影响偏函数的本质，
@@ -678,7 +679,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             val partialFunc3: PartialFunction[Int, String] = {
                case i if (i + 2) % 3 == 0 => "Something else"
             }
-        
+                
             val partialFunc4 = partialFunc1 orElse partialFunc3
             
             partialFunc4.isDefinedAt(0) // false
@@ -688,11 +689,11 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
             partialFunc4(1) // Something else
             partialFunc4(2) // SomeThing
             ```
-            
+           
    - Type Safe Connections  
             Chisel会对很多连接检查类型，包括`Bool/UInt to Clock`。
         对于其他类型，Chisel会允许连接，但是适当的填充或截断位，例：`src/week3/BadTypeModule.scala`
-            
+        
    - 泛型（Type Generics）/ 多态（polymorphic）
         -  Classes在类型上可以是多态的，例如：sequences，sequences要求知道它所包含的元素类型：
                
@@ -717,7 +718,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                它参数化了返回值类型是基于代码段的返回值类型的。
                
                 > `=> T`表示一个没有参数的匿名函数
-              
+           
            ```scala
             def time[T](block: => T): T = { // block只有在使用时才运行，调用的时候不必计算出其结果，这叫Call-By-Name。
                                             // 如果不加=>，称为Call-By-Value
@@ -738,7 +739,7 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                (1 to 1000000).map(_.toHexString).filter(_.contains("beef")).last
             }                                                                       // Block took 2800.7824 milliseconds!
             println(s"The largest number under a million that has beef: $string")   // The largest number under a million that has beef: ebeef
-       
+              
            ```
         
    -  Chisel Type Hierarchy
@@ -751,14 +752,15 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
         也就是说RegEnable可以应用于所有Chisel硬件类型。一些操作符只适合于`Bits`,如`+`,只适用于SInt和UInt，但不适用于Vec和Bundle
             
             > 这里的[A <: B]表示，A必须是B的子类，[A >: B]表示A必须是B的父类
-        
+            
             在Scala中，除了objects和functions可以被当做函数外，类型（types）也可以被当做函数。
             
             我们通常需要提供一个类型限制，如上面提到的`[T <: Data]`,若有了该限制，那传入的类型只能是Data的子类，例如`:=3`是非法的，因为3是Scala中的Int 类型，
         不是Chisel中的UInt类型。
             
+        
             `week3/ShiftRegister.scala`实现了一个把类型当做参数的shift register
-            
+        
    -  Type Generics with Typeclasses
            
         前面的例子只能限制用于`Data`实例的一些简单的操作符，例如`:=`,`RegNext()`,当我们生成DSP电路时，
@@ -784,9 +786,9 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
                   val out = Output(genOut.cloneType)
             })
                io.out := io.a * io.b + io.c
-        
+            
             }
-        
+            
             // verilog代码生成 
             // UInt: test:runMain utils.getVerilog macforuint
             // SInt: test:runMain utils.getVerilog macforsint
@@ -802,4 +804,4 @@ Scala中函数是第一类对象(first-class objects),所以我们可以将一�
 
 
    - 创建自定义的类型  
-   ​  
+      ​  

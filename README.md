@@ -88,9 +88,11 @@
 
 
 ### 一些笔记
-   - Week2
+   - [week2](src/main/scala/week2/README.md)
     
-   - week3
+   - [week3](src/main/scala/week3/README.md)
+
+   - [week4](src/main/scala/week4/README.md)
       
 
 ​         

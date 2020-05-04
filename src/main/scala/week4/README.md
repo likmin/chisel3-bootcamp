@@ -2,7 +2,7 @@
 
 #### **4.1 什么是FIRRTL**  
 
-- #### 什么是FIRRTL
+- ##### 什么是FIRRTL
 
 ​		在执行一个chisel设计时，为了构造生成器的实例，它会解析所有的Scala参数，执行周围的Scala代码，详细说明（elaborate）。
 
@@ -49,7 +49,7 @@
 
 
 
-- #### 第一个FRRTL抽象语法树
+- ##### 第一个FRRTL抽象语法树
 
   正如前面提到的，一个FIRRTL representation可以被序列化为一个字符串，但是实际上，它是一种称为**抽象语法树**(AST, abstract syntax tree)的数据结构。这个数据结构是一个节点树，其中一个节点可以包含子节点，另外此数据结构中没有循环。
 
@@ -215,7 +215,7 @@
 
 
 
-- #### FIRRTL Node描述
+- ##### FIRRTL Node描述
 
   ​	这一节所描述的共同的FirrtlNodes可在`firrtl/src/main/scala/firrtl/ir/IR.scala`找到，更多这里没有提到的细节可以参考[The FIRRTL  Specification](https://github.com/ucb-bar/firrtl/blob/master/spec/spec.pdf)
 
@@ -498,7 +498,7 @@
 
 #### 4.3 Firrtl中常用成语（Firrtl Common Idioms）
 
-- 添加状态（Adding Statements）
+- ##### 添加状态（Adding Statements）
 
   假设我们想要写一个拆分嵌套的`DOPrim表达式`的pass，如下：
 
@@ -565,7 +565,7 @@
   }
   ```
 
-- 删除状态（Deleting statements）
+- ##### 删除状态（Deleting statements）
 
   假设我们想要编写一个内联所有值为文本DefNodes的pass，如下：
 
@@ -631,7 +631,7 @@
 
 ​	这里的AnalyzeCircuit转换会遍历`firrtl.ir.Circuit`，并记录每个模块发现的add ops。
 
-- 统计每个模块中的加法器
+- ##### 统计每个模块中的加法器
 
   一个Firrtl电路是利用一个树的表达方式表示的：
 
@@ -762,7 +762,7 @@
 
   
 
-- Running our Transform
+- ##### Running our Transform
 
   现在我们已经定义好了，让我们在其上面运行一个Chisel设计，先定一个Chisel模块
 
