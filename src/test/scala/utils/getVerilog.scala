@@ -59,8 +59,9 @@ object getVerilog {
       case "polynomial"         => chisel3.Driver.emitVerilog(new Polynomial)
       case "myshiftregister"    => chisel3.Driver.emitVerilog(new MyShiftRegister(n = 4))
       case "mymodule"           => chisel3.Driver.emitVerilog(new MyModule)
+      case "parameterizedadder" => chisel3.Driver.emitVerilog(new ParameterizedAdder(saturate = true))
+      case "comb"               => chisel3.Driver.emitVerilog(new Comb)
       // week 3
-
       case "parameterizedwidthadder"      => chisel3.Driver.emitVerilog(new ParameterizedWidthAdder(1, 4, 6))
       case "delayby1"                     => chisel3.Driver.emitVerilog(new DelayBy1)
       case "halffulladderwithcarry"       => chisel3.Driver.emitVerilog(new HalfFullAdder(hasCarry = true))

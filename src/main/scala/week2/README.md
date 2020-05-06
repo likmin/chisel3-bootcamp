@@ -1,5 +1,5 @@
-### Week2
-2.1. Registers和Wires在控制流上非常相似：   
+## Week2
+#### 2.1. Registers和Wires在控制流上非常相似：   
 
    - Registers也有last connect   
 
@@ -11,7 +11,7 @@
 
    > TODO: ElasticReg 在Boom源代码中
 
-2.2. ChiselTest
+#### 2.2. ChiselTest
 
    - ChiselTest为`Decoupled`接口提供了一些有效的测试工具  
         - `initSource`和`setSourceClock`可以在测试开始之前正确的初始化`ready`和`valid`字段
@@ -22,6 +22,8 @@
 
    > 但是如果`Seq`中的元素多于队列的深度，会溢出，可以通过fork和join来解决
 
-2.3. `fork`启动一个并发代码块，附加的fork在前面的fork的代码块末尾通过`.fork{...}`添加，
-            这样`fork {...}`和`.fork{...}`可并发的执行。join: 将多个相关分叉重新组合
-            （re-unities）重新组合到调用线程中。
+#### 2.3. `fork`启动一个并发代码块，附加的fork在前面的fork的代码块末尾通过`.fork{...}`添加，
+
+​            这样`fork {...}`和`.fork{...}`可并发的执行。join: 将多个相关分叉重新组合
+​            （re-unities）重新组合到调用线程中。
+​            

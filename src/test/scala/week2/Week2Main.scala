@@ -118,6 +118,10 @@ object Week2Main {
       QueueModuleTester()
     } else if(args.length == 1 && args(0).toLowerCase == "decoupledgcd") {
       DecoupledGcdTester()
-    } else TutorialRunner("Week2Main", tests, args)
+    } else if(args.length == 1 && args(0).toLowerCase == "parameterizedadder") {
+      for (saturate <- Seq(true, false)) {
+        assert(Driver(() => new ParameterizedAdder(saturate)) {c => new ParameterizedAdderTester(c, saturate)})
+      }
+    } else TutorialRunner("Week2Main", tests, args) 
   }
 }
